@@ -1,20 +1,22 @@
-# [Project name]
+# Nomilora
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A mobile-first customer preview for Nomilora, a planned personalized prepared-meal service in Queens, New York.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/nomilora run dev` — run the customer web app through its managed workflow
+- `pnpm --filter @workspace/api-server run dev` — run the shared API server through its managed workflow
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Phase 1 does not require database, payment, or authentication secrets.
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
+- Web: React, TypeScript, Vite, Tailwind CSS
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
@@ -22,23 +24,35 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- Customer app: `artifacts/nomilora/`
+- Customer API and illustrative catalog: `artifacts/api-server/src/routes/nomilora.ts` and `artifacts/api-server/src/lib/nomilora-catalog.ts`
+- API contract: `lib/api-spec/openapi.yaml`
+- Generated API hooks and schemas: `lib/api-client-react/` and `lib/api-zod/`
+- Phase 1 app notes: `artifacts/nomilora/README.md`
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Phase 1 uses server-served illustrative catalog data and browser-local storage; database persistence and user accounts are deferred.
+- Checkout validates server-side sample prices but only returns a zero-charge simulation. It never creates a real order.
+- API hooks and Zod schemas are generated from the OpenAPI contract; update the contract and rerun codegen together.
+- The PWA caches only the app shell and brand assets. It never caches API or checkout responses.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Nomilora helps customers explore sample chef-prepared meals, personalize menu ideas, save favorites, manage a local preview cart, and simulate checkout without charges. The planned Queens pilot is not active.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep the name Nomilora and tagline “Good food. Your way.”
+- Use the supplied original Nomilora logo and app-icon files without redesign.
+- Keep menu data and checkout clearly marked as demo-only until the founder verifies real partners, food details, delivery areas, and payments.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- No active delivery zones, delivery windows, live payment processing, or subscriptions are configured.
+- All meal ingredients, tags, prices, allergen declarations, nutrition, storage, and reheating information are unverified sample data.
+- Do not treat missing allergen data as safe. Strict allergen preferences must return no recommendations.
+- Do not introduce real-order or delivery-success language while the app remains in demo mode.
 
 ## Pointers
 

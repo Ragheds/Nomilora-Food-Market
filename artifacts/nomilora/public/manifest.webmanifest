@@ -1,0 +1,24 @@
+{
+  "name": "Nomilora — Good food. Your way.",
+  "short_name": "Nomilora",
+  "description": "Explore an illustrative menu preview from Nomilora.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FCF4E9",
+  "theme_color": "#103D26",
+  "icons": [
+    {
+      "src": "/brand/04_nomilora_app_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/04_nomilora_app_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -3,13 +3,19 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Typed customer-facing API for the Nomilora Phase 1 demo.
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: meals
+    description: Illustrative customer meal catalog
+  - name: recommendations
+    description: Deterministic demo personalization
+  - name: checkout
+    description: No-charge checkout simulation
 paths:
   /healthz:
     get:
@@ -24,6 +30,104 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /meals:
+    get:
+      operationId: listMeals
+      tags: [meals]
+      summary: List illustrative meals
+      responses:
+        "200":
+          description: The demo meal catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meal"
+  /meals/{mealId}:
+    get:
+      operationId: getMeal
+      tags: [meals]
+      summary: Get a meal by identifier
+      parameters:
+        - name: mealId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The illustrative meal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Meal"
+        "404":
+          description: Meal not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /launch-readiness:
+    get:
+      operationId: getLaunchReadiness
+      tags: [meals]
+      summary: Get configured delivery and payment status
+      responses:
+        "200":
+          description: Current launch readiness; no pilot areas are enabled by default
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LaunchReadiness"
+  /recommendations:
+    post:
+      operationId: getRecommendations
+      tags: [recommendations]
+      summary: Recommend illustrative meals from quiz preferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendationInput"
+      responses:
+        "200":
+          description: Deterministic preference matches and allergen safety notice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecommendationResponse"
+        "400":
+          description: Invalid preference input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /demo-checkouts:
+    post:
+      operationId: simulateDemoCheckout
+      tags: [checkout]
+      summary: Validate a basket and simulate a zero-charge checkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DemoCheckoutInput"
+      responses:
+        "200":
+          description: A clearly marked checkout simulation with no charge or real order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoCheckoutSimulation"
+        "400":
+          description: Invalid basket or demo acknowledgement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +137,282 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Meal:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        priceCents:
+          type: integer
+          minimum: 0
+        photoUrl:
+          type: string
+        cuisine:
+          type: string
+        mealType:
+          type: string
+        category:
+          type: string
+        dietaryTags:
+          type: array
+          items:
+            type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+        allergens:
+          type: array
+          items:
+            type: string
+        allergenStatus:
+          type: string
+          enum: [unverified]
+        nutritionStatus:
+          type: string
+          enum: [unverified]
+        portion:
+          type: string
+        storage:
+          type: string
+        reheating:
+          type: string
+        featured:
+          type: boolean
+        demoOnly:
+          type: boolean
+      required:
+        - id
+        - name
+        - description
+        - priceCents
+        - photoUrl
+        - cuisine
+        - mealType
+        - category
+        - dietaryTags
+        - ingredients
+        - allergens
+        - allergenStatus
+        - nutritionStatus
+        - portion
+        - storage
+        - reheating
+        - featured
+        - demoOnly
+    LaunchReadiness:
+      type: object
+      properties:
+        mode:
+          type: string
+          enum: [demo]
+        plannedAreas:
+          type: array
+          items:
+            type: string
+        activeDeliveryZones:
+          type: array
+          items:
+            type: string
+        deliveryEnabled:
+          type: boolean
+        paymentsEnabled:
+          type: boolean
+        weeklyPlanBillingEnabled:
+          type: boolean
+        notice:
+          type: string
+      required:
+        - mode
+        - plannedAreas
+        - activeDeliveryZones
+        - deliveryEnabled
+        - paymentsEnabled
+        - weeklyPlanBillingEnabled
+        - notice
+    RecommendationInput:
+      type: object
+      properties:
+        eatingStyles:
+          type: array
+          items:
+            type: string
+            enum:
+              - Everything
+              - Vegan
+              - Vegetarian
+              - Pescatarian
+              - High Protein
+              - Halal preference
+              - Kosher preference
+              - Low Carb
+              - Keto
+              - Dairy avoidance
+              - Gluten avoidance
+              - Soups or blended meals
+        goals:
+          type: array
+          items:
+            type: string
+            enum:
+              - Convenience
+              - Delicious everyday meals
+              - Balanced meals
+              - More protein
+              - More vegetables
+              - Discover new cuisines
+              - Family meals
+        cuisines:
+          type: array
+          items:
+            type: string
+            enum:
+              - American
+              - Italian
+              - Mediterranean
+              - Middle Eastern
+              - Mexican
+              - Indian
+              - Japanese
+              - Korean
+              - Chinese-inspired
+              - Other
+        strictAllergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+        dislikes:
+          type: array
+          items:
+            type: string
+        mealsPerWeek:
+          type: string
+          enum:
+            - One-time
+            - 3–4
+            - 5–7
+            - 8–10
+            - 10+
+      required:
+        - eatingStyles
+        - goals
+        - cuisines
+        - strictAllergens
+        - dislikes
+        - mealsPerWeek
+    Recommendation:
+      type: object
+      properties:
+        mealId:
+          type: string
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        reasons:
+          type: array
+          items:
+            type: string
+      required: [mealId, score, reasons]
+    RecommendationResponse:
+      type: object
+      properties:
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Recommendation"
+        allergenNotice:
+          type: string
+        preferenceSummary:
+          type: string
+      required: [recommendations, allergenNotice, preferenceSummary]
+    DemoCheckoutItemInput:
+      type: object
+      properties:
+        mealId:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 20
+      required: [mealId, quantity]
+    DemoCheckoutInput:
+      type: object
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/DemoCheckoutItemInput"
+        acknowledgedDemoOnly:
+          type: boolean
+          enum: [true]
+      required: [items, acknowledgedDemoOnly]
+    DemoCheckoutLine:
+      type: object
+      properties:
+        mealId:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: integer
+        unitPriceCents:
+          type: integer
+        lineTotalCents:
+          type: integer
+      required: [mealId, name, quantity, unitPriceCents, lineTotalCents]
+    DemoCheckoutSimulation:
+      type: object
+      properties:
+        demoId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [simulated]
+        paymentStatus:
+          type: string
+          enum: [not_charged]
+        itemCount:
+          type: integer
+        subtotalCents:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DemoCheckoutLine"
+        message:
+          type: string
+      required:
+        - demoId
+        - createdAt
+        - status
+        - paymentStatus
+        - itemCount
+        - subtotalCents
+        - items
+        - message
 
