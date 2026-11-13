@@ -1,4 +1,5 @@
-import { type ReactNode, createContext, useContext, useMemo, useState } from 'react';
+import { readStored, normalizeCart } from './lib/storage';
+import { type ReactNode, createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -16,14 +17,6 @@ const FAVORITES_KEY = 'nomilora-favorites-v1';
 const PROFILE_KEY = 'nomilora-preferences-v1';
 const HISTORY_KEY = 'nomilora-demo-history-v1';
 
-function readStored<T>(key: string, fallback: T): T {
-  try {
-    const value = localStorage.getItem(key);
-    return value ? JSON.parse(value) as T : fallback;
-  } catch {
-    return fallback;
-  }
-}
 function writeStored(key: string, value: unknown) {
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage may be unavailable */ }
 }
@@ -52,6 +45,7 @@ function useApp() {
 
 function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [location]);
   const mealQuery = useListMeals();
   const launchQuery = useGetLaunchReadiness();
   const [cart, setCartState] = useState<Record<string, number>>(() => readStored(CART_KEY, {}));
@@ -60,7 +54,7 @@ function AppShell({ children }: { children: ReactNode }) {
     eatingStyles: [], goals: [], cuisines: [], strictAllergens: [], dislikes: [], mealsPerWeek: 'One-time',
   }));
   const [history, setHistory] = useState<DemoCheckoutSimulation[]>(() => readStored(HISTORY_KEY, []));
-  const setCart = (next: Record<string, number>) => { setCartState(next); writeStored(CART_KEY, next); };
+  const setCart = (next: Record<string, number>) => { const safe = normalizeCart(next); setCartState(safe); writeStored(CART_KEY, safe); };
   const toggleFavorite = (id: string) => setFavorites((current) => {
     const next = current.includes(id) ? current.filter((value) => value !== id) : [...current, id];
     writeStored(FAVORITES_KEY, next);
@@ -68,7 +62,7 @@ function AppShell({ children }: { children: ReactNode }) {
   });
   const setProfile = (next: RecommendationInput) => { setProfileState(next); writeStored(PROFILE_KEY, next); };
   const saveHistory = (item: DemoCheckoutSimulation) => setHistory((current) => {
-    const next = [item, ...current];
+    const next = [item, ...current].slice(0, 100);
     writeStored(HISTORY_KEY, next);
     return next;
   });

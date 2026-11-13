@@ -1,0 +1,10 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readStored, normalizeCart } from '../src/lib/storage.ts';
+let stored: string | null = null;
+Object.defineProperty(globalThis, 'localStorage', { value: { getItem: () => stored }, configurable: true });
+test('malformed JSON and JSON null recover safely', () => { for (const value of ['{', 'null', '[]']) { stored = value; assert.deepEqual(readStored('nomilora-cart-v1', {}), {}); } });
+test('wrong favorites, partial profiles and malformed history recover', () => { for (const [key, value, fallback] of [['nomilora-favorites-v1', '[1]', []], ['nomilora-preferences-v1', '{}', null], ['nomilora-demo-history-v1', '[{}]', []]] as const) { stored = value; assert.deepEqual(readStored(key, fallback), fallback); } });
+test('cart quantities remain API compatible across all add paths', () => { assert.deepEqual(normalizeCart({ chicken: 21, soup: -1, pasta: 1.5, tofu: NaN, rice: 2 }), { chicken: 20, rice: 2 }); });
+test('stored oversized quantities normalize on reload', () => { stored = '{"chicken":999}'; assert.deepEqual(readStored('nomilora-cart-v1', {}), { chicken: 20 }); });
+test('strict allergen preferences survive validation', () => { const profile = { eatingStyles: [], goals: [], cuisines: [], strictAllergens: ['Peanuts'], dislikes: [], mealsPerWeek: 'One-time' }; stored = JSON.stringify(profile); assert.deepEqual(readStored('nomilora-preferences-v1', null), profile); });
