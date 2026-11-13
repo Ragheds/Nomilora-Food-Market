@@ -7,7 +7,7 @@ Inspected in the existing Replit project through the connected browser: source, 
 - Five-step optional quiz with deterministic server scoring. Strict-allergen selections return zero recommendations because all demo declarations are unknown. This guard does not make the catalog allergy-safe.
 - Typed API client and Express routes for catalog, detail, recommendations, readiness and demo checkout; server validates requests and calculates totals. Checkout returns simulated/not_charged.
 - Browser storage persists cart, preferences, favorites and history on the same device; it is not authenticated server/database persistence. Database schema is still scaffolding.
-- React/Vite frontend and Express backend differ from the requested Next.js architecture. No framework migration was attempted.
+- React/Vite and Express align with the full specification's React/Vite preference; it does not require a Next.js migration.
 - Original six installed brand files and favicon match launch ZIP bytes exactly. No logo assets were edited.
 
 ## Verified and changed in this audit
@@ -28,7 +28,6 @@ Inspected in the existing Replit project through the connected browser: source, 
 6. Decide whether to retain React/Vite+Express or align with Next.js before expanding into partner/admin systems. Keep approved logos unchanged in either choice.
 
 ## Limits and missing work
-- Replit banner states daily free Agent quota exhausted and reset at 00:00 UTC. It is not proof of a code/build failure or proof the quota is currently available; no new Agent run was submitted. Manual tools remained usable.
 - Authentication/accounts, real database persistence, partner/admin portals, live kitchens, verified allergens/nutrition, active delivery zones/windows, contact/waitlist collection and payments are not complete.
 - Demo checkout omits address/scheduling/test-payment integration; discount and scheduling controls are placeholders. Disabled payments and delivery are appropriate until configured.
 - No claim of launch readiness, comprehensive security review, food-safety verification or production deployment is made.
