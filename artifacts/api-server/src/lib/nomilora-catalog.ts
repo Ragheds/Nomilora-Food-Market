@@ -1,6 +1,6 @@
 import { ListMealsResponse } from "@workspace/api-zod";
 
-export const nomiloraMeals = ListMealsResponse.parse([
+const demoMeals = [
   {
     id: "lemon-chicken-rice",
     name: "Lemon Chicken & Rice",
@@ -353,4 +353,8 @@ export const nomiloraMeals = ListMealsResponse.parse([
     featured: true,
     demoOnly: true,
   },
-]);
+];
+
+export const nomiloraMeals = ListMealsResponse.parse(
+  demoMeals.map((meal) => ({ ...meal, dietaryStatus: "unverified" as const })),
+);

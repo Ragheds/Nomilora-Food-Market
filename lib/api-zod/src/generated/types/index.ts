@@ -18,6 +18,7 @@ export * from './launchReadiness';
 export * from './launchReadinessMode';
 export * from './meal';
 export * from './mealAllergenStatus';
+export * from './mealDietaryStatus';
 export * from './mealNutritionStatus';
 export * from './recommendation';
 export * from './recommendationInput';

@@ -175,6 +175,9 @@ components:
           type: array
           items:
             type: string
+        dietaryStatus:
+          type: string
+          enum: [unverified, verified]
         allergenStatus:
           type: string
           enum: [unverified]
@@ -203,6 +206,7 @@ components:
         - dietaryTags
         - ingredients
         - allergens
+        - dietaryStatus
         - allergenStatus
         - nutritionStatus
         - portion

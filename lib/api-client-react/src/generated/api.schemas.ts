@@ -13,6 +13,14 @@ export interface ErrorResponse {
   error: string;
 }
 
+export type MealDietaryStatus = typeof MealDietaryStatus[keyof typeof MealDietaryStatus];
+
+
+export const MealDietaryStatus = {
+  unverified: 'unverified',
+  verified: 'verified',
+} as const;
+
 export type MealAllergenStatus = typeof MealAllergenStatus[keyof typeof MealAllergenStatus];
 
 
@@ -40,6 +48,7 @@ export interface Meal {
   dietaryTags: string[];
   ingredients: string[];
   allergens: string[];
+  dietaryStatus: MealDietaryStatus;
   allergenStatus: MealAllergenStatus;
   nutritionStatus: MealNutritionStatus;
   portion: string;

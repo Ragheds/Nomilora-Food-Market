@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { MealAllergenStatus } from './mealAllergenStatus';
+import type { MealDietaryStatus } from './mealDietaryStatus';
 import type { MealNutritionStatus } from './mealNutritionStatus';
 
 export interface Meal {
@@ -21,6 +22,7 @@ export interface Meal {
   dietaryTags: string[];
   ingredients: string[];
   allergens: string[];
+  dietaryStatus: MealDietaryStatus;
   allergenStatus: MealAllergenStatus;
   nutritionStatus: MealNutritionStatus;
   portion: string;

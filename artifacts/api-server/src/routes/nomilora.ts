@@ -17,6 +17,38 @@ const router: IRouter = Router();
 const allergenNotice =
   "All meal ingredients and allergen declarations are unverified demo data. No meal is represented as allergen-safe. No partner kitchen or contact channel is configured yet; never rely on this preview for a food-safety decision.";
 
+const strictDietaryRequirements: Record<string, string[]> = {
+  Vegan: ["vegan"],
+  Vegetarian: ["vegetarian", "vegan"],
+  Pescatarian: ["pescatarian", "vegetarian", "vegan"],
+  "Halal preference": ["halal"],
+  "Kosher preference": ["kosher"],
+  "Low Carb": ["low carb"],
+  Keto: ["keto"],
+  "Dairy avoidance": ["dairy free"],
+  "Gluten avoidance": ["gluten free"],
+};
+
+const normalizeDietaryTag = (value: string) =>
+  value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+function passesStrictDietaryRequirements(
+  meal: (typeof nomiloraMeals)[number],
+  selectedStyles: string[],
+) {
+  const requirements = selectedStyles
+    .map((style) => strictDietaryRequirements[style])
+    .filter((requirement): requirement is string[] => !!requirement);
+
+  if (requirements.length === 0) return true;
+  if (meal.dietaryStatus !== "verified") return false;
+
+  const tags = meal.dietaryTags.map(normalizeDietaryTag);
+  return requirements.every((acceptedTags) =>
+    acceptedTags.some((tag) => tags.includes(normalizeDietaryTag(tag))),
+  );
+}
+
 router.get("/meals", (_req, res) => {
   res.json(ListMealsResponse.parse(nomiloraMeals));
 });
@@ -89,7 +121,10 @@ router.post("/recommendations", (req, res) => {
     .map((term) => term.trim().toLowerCase())
     .filter(Boolean);
 
-  const recommendations = nomiloraMeals
+  const restrictedMeals = nomiloraMeals.filter((meal) =>
+    passesStrictDietaryRequirements(meal, preferences.eatingStyles),
+  );
+  const recommendations = restrictedMeals
     .filter((meal) => {
       const searchableText = [
         meal.name,
@@ -159,10 +194,15 @@ router.post("/recommendations", (req, res) => {
     )
     .slice(0, 8);
 
+  const hasStrictDietaryPreference = preferences.eatingStyles.some(
+    (style) => !!strictDietaryRequirements[style],
+  );
   const preferenceSummary =
-    preferences.cuisines.length > 0
-      ? `A starting menu inspired by ${preferences.cuisines.slice(0, 3).join(", ")}.`
-      : "A starting menu picked from the tastes and goals you shared.";
+    hasStrictDietaryPreference && restrictedMeals.length === 0
+      ? "No matches: the preview has no verified dietary labels for your strict preferences."
+      : preferences.cuisines.length > 0
+        ? `A starting menu inspired by ${preferences.cuisines.slice(0, 3).join(", ")}.`
+        : "A starting menu picked from the tastes and goals you shared.";
 
   res.json(
     GetRecommendationsResponse.parse({
