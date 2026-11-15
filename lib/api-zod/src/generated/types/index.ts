@@ -6,6 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './addressId';
+export * from './applicationRole';
+export * from './checkAdminAccess200';
+export * from './checkPartnerAccess200';
+export * from './checkSupportAccess200';
+export * from './customerAccount';
+export * from './customerAccountCart';
+export * from './customerAddressInput';
+export * from './customerAddressInputCountryCode';
+export * from './customerCartInput';
+export * from './customerCartInputItemsItem';
+export * from './customerProfileInput';
 export * from './demoCheckoutInput';
 export * from './demoCheckoutItemInput';
 export * from './demoCheckoutLine';
@@ -26,5 +38,7 @@ export * from './recommendationInputCuisinesItem';
 export * from './recommendationInputEatingStylesItem';
 export * from './recommendationInputGoalsItem';
 export * from './recommendationInputMealsPerWeek';
+export * from './recommendationInputPreferredMealTypesItem';
 export * from './recommendationInputStrictAllergensItem';
 export * from './recommendationResponse';
+export * from './savedCustomerAddress';

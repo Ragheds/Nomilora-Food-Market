@@ -1,3 +1,6 @@
+import { AuthProvider, useAuth } from './lib/auth';
+import { useCustomerAccount } from './lib/customer-account';
+import { AccountPage } from './pages/account';
 import { readStored, normalizeCart } from './lib/storage';
 import { type ReactNode, createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -23,6 +26,7 @@ function writeStored(key: string, value: unknown) {
 function money(cents: number) { return `$${(cents / 100).toFixed(2)}`; }
 
 type AppState = {
+  customer: ReturnType<typeof useCustomerAccount>;
   meals: Meal[];
   readiness?: LaunchReadiness;
   loading: boolean;
@@ -45,22 +49,35 @@ function useApp() {
 
 function AppShell({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { session } = useAuth();
+  const customer = useCustomerAccount(session?.user.id);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [location]);
   const mealQuery = useListMeals();
   const launchQuery = useGetLaunchReadiness();
-  const [cart, setCartState] = useState<Record<string, number>>(() => readStored(CART_KEY, {}));
-  const [favorites, setFavorites] = useState<string[]>(() => readStored(FAVORITES_KEY, []));
-  const [profile, setProfileState] = useState<RecommendationInput>(() => readStored(PROFILE_KEY, {
+  const [guestCart, setCartState] = useState<Record<string, number>>(() => readStored(CART_KEY, {}));
+  const [guestFavorites, setFavorites] = useState<string[]>(() => readStored(FAVORITES_KEY, []));
+  const [guestProfile, setProfileState] = useState<RecommendationInput>(() => readStored(PROFILE_KEY, {
     eatingStyles: [], goals: [], cuisines: [], strictAllergens: [], dislikes: [], mealsPerWeek: 'One-time',
   }));
   const [history, setHistory] = useState<DemoCheckoutSimulation[]>(() => readStored(HISTORY_KEY, []));
-  const setCart = (next: Record<string, number>) => { const safe = normalizeCart(next); setCartState(safe); writeStored(CART_KEY, safe); };
-  const toggleFavorite = (id: string) => setFavorites((current) => {
-    const next = current.includes(id) ? current.filter((value) => value !== id) : [...current, id];
-    writeStored(FAVORITES_KEY, next);
-    return next;
-  });
-  const setProfile = (next: RecommendationInput) => { setProfileState(next); writeStored(PROFILE_KEY, next); };
+  const cart = session ? customer.account?.cart ?? {} : guestCart;
+  const favorites = session ? customer.account?.favorites ?? [] : guestFavorites;
+  const profile = session ? customer.account?.preferences ?? { eatingStyles: [], goals: [], cuisines: [], strictAllergens: [], dislikes: [], mealsPerWeek: 'One-time' } as RecommendationInput : guestProfile;
+  const setCart = (next: Record<string, number>) => {
+    const safe = normalizeCart(next);
+    if (session) customer.update(current => ({ ...current, cart: safe }), '/cart', 'PUT', { items: Object.entries(safe).map(([mealId, quantity]) => ({ mealId, quantity })) });
+    else { setCartState(safe); writeStored(CART_KEY, safe); }
+  };
+  const toggleFavorite = (id: string) => {
+    const enabled = !favorites.includes(id);
+    const next = enabled ? [...favorites, id] : favorites.filter(value => value !== id);
+    if (session) customer.update(current => ({ ...current, favorites: next }), `/favorites/${id}`, enabled ? 'PUT' : 'DELETE');
+    else { setFavorites(next); writeStored(FAVORITES_KEY, next); }
+  };
+  const setProfile = (next: RecommendationInput) => {
+    if (session) customer.update(current => ({ ...current, preferences: { ...next, preferredMealTypes: next.preferredMealTypes ?? [] } }), '/preferences', 'PUT', next);
+    else { setProfileState(next); writeStored(PROFILE_KEY, next); }
+  };
   const saveHistory = (item: DemoCheckoutSimulation) => setHistory((current) => {
     const next = [item, ...current].slice(0, 100);
     writeStored(HISTORY_KEY, next);
@@ -68,13 +85,16 @@ function AppShell({ children }: { children: ReactNode }) {
   });
   const state = useMemo<AppState>(() => ({
     meals: mealQuery.data ?? [], readiness: launchQuery.data, loading: mealQuery.isLoading, error: mealQuery.isError,
-    cart, setCart, favorites, toggleFavorite, profile, setProfile, history, saveHistory,
-  }), [mealQuery.data, mealQuery.isLoading, mealQuery.isError, launchQuery.data, cart, favorites, profile, history]);
+    customer, cart, setCart, favorites, toggleFavorite, profile, setProfile, history, saveHistory,
+  }), [mealQuery.data, mealQuery.isLoading, mealQuery.isError, launchQuery.data, cart, favorites, profile, history, customer]);
   return (
     <AppContext.Provider value={state}>
       <div className="min-h-[100dvh] grain">
         <Header />
-        <main key={location} className="page-enter">{children}</main>
+        {session && <div className="mx-auto max-w-6xl px-5 py-3 text-sm" aria-live="polite">
+          {customer.loading ? <p>Loading your saved account…</p> : customer.loadError ? <p role="alert">{customer.loadError} <button onClick={customer.reload} className="underline">Retry</button></p> : customer.error ? <p role="alert">{customer.error} Changes have not been saved. <button onClick={customer.retry} className="underline">Retry save</button></p> : customer.pending ? <p>Saving account changes…</p> : customer.saved ? <p>Account changes saved.</p> : null}
+        </div>}
+        <main inert={!!session && (customer.loading || !!customer.loadError) && location !== '/account'} key={location} className="page-enter">{children}</main>
         <Footer />
         <MobileNav />
       </div>
@@ -83,6 +103,7 @@ function AppShell({ children }: { children: ReactNode }) {
 }
 
 function Header() {
+  const { session } = useAuth();
   const { cart } = useApp();
   const count = Object.values(cart).reduce((sum, quantity) => sum + quantity, 0);
   return (
@@ -91,7 +112,7 @@ function Header() {
         <Link href="/" className="flex items-center" aria-label="Nomilora home" data-testid="link-home-logo">
           <img src="/brand/01_nomilora_horizontal_transparent.png" alt="Nomilora" className="w-[164px] sm:w-[198px]" />
         </Link>
-        <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-6 xl:flex" aria-label="Main navigation">
           <Link href="/explore" className="nav-link">Explore meals</Link>
           <Link href="/#how-it-works" className="nav-link">How it works</Link>
           <Link href="/plans" className="nav-link">Weekly plan</Link>
@@ -99,6 +120,7 @@ function Header() {
           <Link href="/profile" className="nav-link">My tastes</Link>
         </nav>
         <div className="flex items-center gap-2">
+          <Link href="/account" className="rounded-full px-3 py-2 text-sm font-semibold text-[#173b27]">{session ? 'Account' : 'Sign in'}</Link>
           <Link href="/quiz" className="hidden rounded-full border border-[#d8d3c6] px-4 py-2 text-sm font-semibold text-[#163a24] hover:bg-[#eeece2] sm:inline-flex">Find my meals</Link>
           <Link href="/cart" className="relative flex h-11 w-11 items-center justify-center rounded-full bg-[#173b27] text-[#fbf8ef] hover:bg-[#27553a]" aria-label={`Cart, ${count} items`} data-testid="link-cart-header">
             <ShoppingBag size={19} />
@@ -113,7 +135,7 @@ function Header() {
   );
 }
 function Footer() {
-  return <footer className="mt-20 border-t border-[#ddd7ca] bg-[#f0eee5] px-5 py-10 pb-24 md:pb-10">
+  return <footer className="mt-20 border-t border-[#ddd7ca] bg-[#f0eee5] px-5 py-10 pb-24 xl:pb-10">
     <div className="mx-auto flex max-w-[1180px] flex-col gap-7 md:flex-row md:items-end md:justify-between">
       <div><img src="/brand/02_nomilora_stacked_transparent.png" alt="Nomilora" className="mb-3 w-[120px]" /><p className="serif text-2xl text-[#173b27]">Good food. Your way.</p></div>
       <div className="max-w-xl text-sm leading-6 text-[#5c6759]">Nomilora is preparing to serve Queens. This is an illustrative preview only: menu details are unverified, delivery zones are not active, and checkout simulations never place or charge a real order.</div>
@@ -122,7 +144,7 @@ function Footer() {
   </footer>;
 }
 function MobileNav() {
-  return <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[#d8d3c6] bg-[#faf8f2]/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur md:hidden" aria-label="Mobile navigation">
+  return <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[#d8d3c6] bg-[#faf8f2]/95 px-1 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur xl:hidden" aria-label="Mobile navigation">
     {[
       ['/', 'Home', <House size={19} />],
       ['/explore', 'Explore', <Utensils size={19} />],
@@ -299,7 +321,7 @@ function Explore() {
     return (!term || [meal.name, meal.description, meal.cuisine, ...meal.dietaryTags].join(' ').toLowerCase().includes(term))
       && (category === 'All dishes' || meal.category === category)
       && (cuisine === 'All cuisines' || meal.cuisine === cuisine)
-      && (diet === 'All styles' || meal.dietaryTags.includes(diet))
+      && (diet === 'All styles' || (meal.dietaryStatus === 'verified' && meal.dietaryTags.includes(diet)))
       && meal.priceCents <= maxPriceCents;
   });
   const resetFilters = () => { setSearch(''); setCategory('All dishes'); setCuisine('All cuisines'); setDiet('All styles'); setPriceCap('Any price'); };
@@ -310,7 +332,7 @@ function Explore() {
       <label className="flex items-center gap-3 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4"><Search size={18} className="text-[#74806e]" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search a dish, flavor, or cuisine" className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-[#93978a]" aria-label="Search meals" data-testid="input-search-meals" /></label>
       <select aria-label="Filter by category" value={category} onChange={(event) => setCategory(event.target.value)} className="h-12 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4 text-sm text-[#435543]" data-testid="select-filter-category">{categories.map((value) => <option key={value}>{value}</option>)}</select>
       <select aria-label="Filter by cuisine" value={cuisine} onChange={(event) => setCuisine(event.target.value)} className="h-12 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4 text-sm text-[#435543]" data-testid="select-filter-cuisine">{cuisines.map((value) => <option key={value}>{value}</option>)}</select>
-      <select aria-label="Filter by illustrative menu style" value={diet} onChange={(event) => setDiet(event.target.value)} className="h-12 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4 text-sm text-[#435543]" data-testid="select-filter-diet">{diets.map((value) => <option key={value}>{value}</option>)}</select>
+      <select aria-label="Filter by verified dietary style" value={diet} onChange={(event) => setDiet(event.target.value)} className="h-12 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4 text-sm text-[#435543]" data-testid="select-filter-diet">{diets.map((value) => <option key={value}>{value}</option>)}</select>
       <select aria-label="Filter by illustrative price" value={priceCap} onChange={(event) => setPriceCap(event.target.value)} className="h-12 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] px-4 text-sm text-[#435543]" data-testid="select-filter-price">{['Any price', '$15 or less', '$16 or less', '$17 or less', '$18 or less', '$19 or less'].map((value) => <option key={value}>{value}</option>)}</select>
       <button onClick={resetFilters} className="h-12 rounded-xl px-3 text-sm font-semibold text-[#a34d2c] hover:bg-[#efece3]" data-testid="button-clear-filters">Clear</button>
     </div>
@@ -450,7 +472,7 @@ function Quiz() {
       {step === 1 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">What would make dinner better?</h2><p className="mt-2 text-sm text-[#727668]">Pick the things you want more of.</p><OptionGrid options={GOAL_OPTIONS} selected={profile.goals} onToggle={(value) => toggle('goals', value)} /></>}
       {step === 2 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">Which cuisines call to you?</h2><p className="mt-2 text-sm text-[#727668]">Select a few, or skip ahead if you're open to anything.</p><OptionGrid options={CUISINE_OPTIONS} selected={profile.cuisines} onToggle={(value) => toggle('cuisines', value)} /></>}
       {step === 3 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">Anything you strictly avoid?</h2><div className="mt-4 flex gap-3 rounded-xl border border-[#e0c7b7] bg-[#faeee5] p-4 text-sm leading-6 text-[#754a39]"><ShieldAlert className="mt-1 shrink-0" size={17} /><p><b>Important:</b> all preview meal allergen declarations are unknown. If you select any strict allergen, the recommender will return no matches. Never use this preview to assess food safety.</p></div><OptionGrid options={ALLERGEN_OPTIONS} selected={profile.strictAllergens} onToggle={(value) => toggle('strictAllergens', value)} /></>}
-      {step === 4 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">How many dinners are you thinking?</h2><p className="mt-2 text-sm text-[#727668]">This shapes a preview only. There are no active subscriptions or plan charges.</p><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">{WEEK_OPTIONS.map((option) => <button key={option} onClick={() => { setProfile({ ...profile, mealsPerWeek: option as RecommendationInput['mealsPerWeek'] }); setResult(null); }} aria-pressed={profile.mealsPerWeek === option} className={`rounded-2xl border px-4 py-5 text-left ${profile.mealsPerWeek === option ? 'border-[#173b27] bg-[#e8ecdf] text-[#173b27]' : 'border-[#ded9cc] bg-white/40 text-[#556252]'}`}><span className="serif text-2xl">{option}</span><span className="mt-1 block text-xs">meals each week</span></button>)}</div><label className="mt-6 block text-sm font-semibold text-[#405640]">Flavors or ingredients you dislike <input value={profile.dislikes.join(', ')} onChange={(event) => { const value = event.target.value.split(',').map((item) => item.trim()).filter(Boolean); setProfile({ ...profile, dislikes: value }); setResult(null); }} placeholder="For example: olives, cilantro" className="mt-2 h-12 w-full rounded-xl border border-[#dcd7cb] bg-[#fffdf8] px-4 font-normal outline-none focus:border-[#678265]" data-testid="input-dislikes" /><span className="mt-1 block text-xs font-normal text-[#838477]">Separate items with commas.</span></label></>}
+      {step === 4 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">How many dinners are you thinking?</h2><p className="mt-2 text-sm text-[#727668]">This shapes a preview only. There are no active subscriptions or plan charges.</p><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">{WEEK_OPTIONS.map((option) => <button key={option} onClick={() => { setProfile({ ...profile, mealsPerWeek: option as RecommendationInput['mealsPerWeek'] }); setResult(null); }} aria-pressed={profile.mealsPerWeek === option} className={`rounded-2xl border px-4 py-5 text-left ${profile.mealsPerWeek === option ? 'border-[#173b27] bg-[#e8ecdf] text-[#173b27]' : 'border-[#ded9cc] bg-white/40 text-[#556252]'}`}><span className="serif text-2xl">{option}</span><span className="mt-1 block text-xs">meals each week</span></button>)}</div><fieldset className="mt-6"><legend className="text-sm font-semibold text-[#405640]">Preferred meal types</legend><div className="mt-3 flex flex-wrap gap-4">{(['Breakfast', 'Lunch', 'Dinner', 'Soup or light meal'] as const).map(type => <label key={type} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={profile.preferredMealTypes?.includes(type) ?? false} onChange={event => { const current = profile.preferredMealTypes ?? []; setProfile({ ...profile, preferredMealTypes: event.target.checked ? [...current, type] : current.filter(value => value !== type) }); setResult(null); }} />{type}</label>)}</div></fieldset><label className="mt-6 block text-sm font-semibold text-[#405640]">Flavors or ingredients you dislike <input value={profile.dislikes.join(', ')} onChange={(event) => { const value = event.target.value.split(',').map((item) => item.trim()).filter(Boolean); setProfile({ ...profile, dislikes: value }); setResult(null); }} placeholder="For example: olives, cilantro" className="mt-2 h-12 w-full rounded-xl border border-[#dcd7cb] bg-[#fffdf8] px-4 font-normal outline-none focus:border-[#678265]" data-testid="input-dislikes" /><span className="mt-1 block text-xs font-normal text-[#838477]">Separate items with commas.</span></label></>}
       <div className="mt-9 flex justify-between border-t border-[#e7e2d7] pt-5"><button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-[#5a6759] disabled:invisible"><ArrowLeft size={16} /> Back</button>{step < 4 ? <button onClick={() => setStep(step + 1)} className="inline-flex items-center gap-2 rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-white">Continue <ArrowRight size={16} /></button> : <button onClick={finish} disabled={recommendation.isPending} className="inline-flex items-center gap-2 rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{recommendation.isPending ? 'Finding matches…' : 'Show my menu preview'} <Sparkles size={16} /></button>}</div>
       {recommendation.isError && <p role="alert" className="mt-4 text-sm text-[#9a432d]">We couldn't create your recommendations. Please try again.</p>}
     </section>
@@ -496,12 +518,13 @@ function Plans() {
 
 function Profile() {
   const { favorites, meals, toggleFavorite, profile, setProfile } = useApp();
+  const { session } = useAuth();
   const favoriteMeals = meals.filter((meal) => favorites.includes(meal.id));
   return <div className="mx-auto max-w-[1100px] px-5 py-10 md:px-10 md:py-16">
-    <p className="eyebrow">Your Nomilora, your way</p><h1 className="serif mt-2 text-5xl text-[#173b27]">My tastes</h1><p className="mt-3 max-w-2xl text-[#687164]">Your choices and saved meals live in this browser. No account required.</p>
+    <p className="eyebrow">Your Nomilora, your way</p><h1 className="serif mt-2 text-5xl text-[#173b27]">My tastes</h1><p className="mt-3 max-w-2xl text-[#687164]">{session ? 'Your preferences and favorites are saved to your account.' : 'Your choices and saved meals live in this browser.'} <Link href="/account" className="underline">{session ? 'Manage account' : 'Sign in to save across devices'}</Link></p>
     <div className="mt-8 grid gap-8 lg:grid-cols-[.8fr_1.2fr]">
       <section className="rounded-[22px] border border-[#dfdacd] bg-[#fbf9f3] p-5 sm:p-7"><div className="flex items-center justify-between"><h2 className="serif text-2xl text-[#173b27]">Taste profile</h2><Link href="/quiz" className="text-sm font-bold text-[#a34d2c]">Edit quiz</Link></div>
-        <ProfileChips title="Eating styles" values={profile.eatingStyles} /><ProfileChips title="Dinner priorities" values={profile.goals} /><ProfileChips title="Favorite cuisines" values={profile.cuisines} /><ProfileChips title="Strict allergens" values={profile.strictAllergens} />
+        <ProfileChips title="Eating styles" values={profile.eatingStyles} /><ProfileChips title="Dinner priorities" values={profile.goals} /><ProfileChips title="Favorite cuisines" values={profile.cuisines} /><ProfileChips title="Preferred meal types" values={profile.preferredMealTypes ?? []} /><ProfileChips title="Strict allergens" values={profile.strictAllergens} />
         <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">Meals per week</p><p className="mt-2 text-sm text-[#4d5c4a]">{profile.mealsPerWeek}</p></div>
         <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">Dislikes</p><p className="mt-2 text-sm text-[#4d5c4a]">{profile.dislikes.length ? profile.dislikes.join(', ') : 'Not set'}</p></div>
         <button onClick={() => setProfile({ eatingStyles: [], goals: [], cuisines: [], strictAllergens: [], dislikes: [], mealsPerWeek: 'One-time' })} className="mt-6 rounded-full border border-[#d3cfc2] px-4 py-2.5 text-xs font-semibold text-[#8b4e37] hover:bg-[#f5e9e2]">Clear taste profile</button>
@@ -515,11 +538,17 @@ function Profile() {
 }
 function ProfileChips({ title, values }: { title: string; values: string[] }) { return <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">{title}</p><div className="mt-2 flex flex-wrap gap-2">{values.length ? values.map((value) => <span key={value} className="rounded-full bg-[#e9ecdf] px-3 py-1.5 text-xs font-semibold text-[#456047]">{value}</span>) : <span className="text-sm text-[#8a8b7d]">Not set</span>}</div></div>; }
 
+function AccountRoute() { const { customer } = useApp(); return <AccountPage customer={customer} />; }
+function SessionShell({ children }: { children: ReactNode }) {
+  const auth = useAuth();
+  if (!auth.ready) return <p className="p-8" role="status">Restoring your session…</p>;
+  return <><div role="alert">{auth.error}</div><AppShell key={auth.session?.user.id ?? 'guest'}>{children}</AppShell></>;
+}
 function App() {
   return <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-        <AppShell>
+        <AuthProvider><SessionShell>
           <RoutedErrorBoundary>
             <Switch>
               <Route path="/" component={Home} />
@@ -530,11 +559,12 @@ function App() {
               <Route path="/checkout" component={Checkout} />
               <Route path="/orders" component={Orders} />
               <Route path="/plans" component={Plans} />
+              <Route path="/account" component={AccountRoute} />
               <Route path="/profile" component={Profile} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>
-        </AppShell>
+        </SessionShell></AuthProvider>
       </WouterRouter>
       <Toaster />
     </TooltipProvider>

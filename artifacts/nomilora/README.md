@@ -1,3 +1,5 @@
+> Historical Phase 1 notes. Current implementation and setup: [root README](../../README.md) and [checkpoint](../../docs/CHECKPOINT.md).
+
 # Nomilora — Phase 1 customer preview
 
 Nomilora is a mobile-first customer experience for a planned prepared-meal pilot in Astoria and Long Island City, Queens. This phase is a preview, not a live ordering service.

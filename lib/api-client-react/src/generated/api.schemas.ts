@@ -137,6 +137,16 @@ export const RecommendationInputStrictAllergensItem = {
   Sesame: 'Sesame',
 } as const;
 
+export type RecommendationInputPreferredMealTypesItem = typeof RecommendationInputPreferredMealTypesItem[keyof typeof RecommendationInputPreferredMealTypesItem];
+
+
+export const RecommendationInputPreferredMealTypesItem = {
+  Breakfast: 'Breakfast',
+  Lunch: 'Lunch',
+  Dinner: 'Dinner',
+  Soup_or_light_meal: 'Soup or light meal',
+} as const;
+
 export type RecommendationInputMealsPerWeek = typeof RecommendationInputMealsPerWeek[keyof typeof RecommendationInputMealsPerWeek];
 
 
@@ -154,6 +164,8 @@ export interface RecommendationInput {
   cuisines: RecommendationInputCuisinesItem[];
   strictAllergens: RecommendationInputStrictAllergensItem[];
   dislikes: string[];
+  /** @maxItems 4 */
+  preferredMealTypes?: RecommendationInputPreferredMealTypesItem[];
   mealsPerWeek: RecommendationInputMealsPerWeek;
 }
 
@@ -220,4 +232,118 @@ export interface DemoCheckoutSimulation {
   items: DemoCheckoutLine[];
   message: string;
 }
+
+export type ApplicationRole = typeof ApplicationRole[keyof typeof ApplicationRole];
+
+
+export const ApplicationRole = {
+  customer: 'customer',
+  restaurant_employee: 'restaurant_employee',
+  restaurant_manager: 'restaurant_manager',
+  support_agent: 'support_agent',
+  operations_admin: 'operations_admin',
+  founder_admin: 'founder_admin',
+} as const;
+
+export interface CustomerProfileInput {
+  /** @maxLength 200 */
+  displayName: string;
+  /** @maxLength 30 */
+  phoneNumber: string;
+}
+
+export type CustomerCartInputItemsItem = {
+  /**
+     * @maxLength 100
+     * @pattern ^[a-z0-9-]+$
+     */
+  mealId: string;
+  /**
+     * @minimum 1
+     * @maximum 20
+     */
+  quantity: number;
+};
+
+export interface CustomerCartInput {
+  /** @maxItems 50 */
+  items: CustomerCartInputItemsItem[];
+}
+
+export type CustomerAddressInputCountryCode = typeof CustomerAddressInputCountryCode[keyof typeof CustomerAddressInputCountryCode];
+
+
+export const CustomerAddressInputCountryCode = {
+  US: 'US',
+} as const;
+
+export interface CustomerAddressInput {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  label: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  recipientName: string;
+  /** @maxLength 30 */
+  phoneNumber?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  street1: string;
+  /** @maxLength 200 */
+  street2?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  city: string;
+  /** @pattern ^[A-Z]{2}$ */
+  region: string;
+  /** @pattern ^\d{5}(-\d{4})?$ */
+  postalCode: string;
+  countryCode?: CustomerAddressInputCountryCode;
+  /** @maxLength 500 */
+  deliveryInstructions?: string;
+  isDefault?: boolean;
+}
+
+export interface AddressId {
+  id: string;
+}
+
+export type SavedCustomerAddress = CustomerAddressInput & AddressId;
+
+export type CustomerAccountCart = {[key: string]: number};
+
+export interface CustomerAccount {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @maxLength 200 */
+  displayName: string;
+  /** @maxLength 30 */
+  phoneNumber: string;
+  roles: ApplicationRole[];
+  preferences: RecommendationInput;
+  cart: CustomerAccountCart;
+  favorites: string[];
+  addresses: SavedCustomerAddress[];
+}
+
+export type CheckAdminAccess200 = {
+  allowed: boolean;
+};
+
+export type CheckSupportAccess200 = {
+  allowed: boolean;
+};
+
+export type CheckPartnerAccess200 = {
+  allowed: boolean;
+};
 

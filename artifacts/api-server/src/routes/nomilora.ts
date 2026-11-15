@@ -122,7 +122,11 @@ router.post("/recommendations", (req, res) => {
     .filter(Boolean);
 
   const restrictedMeals = nomiloraMeals.filter((meal) =>
-    passesStrictDietaryRequirements(meal, preferences.eatingStyles),
+    passesStrictDietaryRequirements(meal, preferences.eatingStyles) &&
+    (!preferences.preferredMealTypes?.length || preferences.preferredMealTypes.some(type => {
+      const normalized = meal.mealType.toLowerCase();
+      return type === 'Soup or light meal' ? /soup|light/.test(`${normalized} ${meal.category} ${meal.name}`.toLowerCase()) : normalized.includes(type.toLowerCase());
+    })),
   );
   const recommendations = restrictedMeals
     .filter((meal) => {

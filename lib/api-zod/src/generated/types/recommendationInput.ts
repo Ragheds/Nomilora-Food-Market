@@ -9,6 +9,7 @@ import type { RecommendationInputCuisinesItem } from './recommendationInputCuisi
 import type { RecommendationInputEatingStylesItem } from './recommendationInputEatingStylesItem';
 import type { RecommendationInputGoalsItem } from './recommendationInputGoalsItem';
 import type { RecommendationInputMealsPerWeek } from './recommendationInputMealsPerWeek';
+import type { RecommendationInputPreferredMealTypesItem } from './recommendationInputPreferredMealTypesItem';
 import type { RecommendationInputStrictAllergensItem } from './recommendationInputStrictAllergensItem';
 
 export interface RecommendationInput {
@@ -17,5 +18,7 @@ export interface RecommendationInput {
   cuisines: RecommendationInputCuisinesItem[];
   strictAllergens: RecommendationInputStrictAllergensItem[];
   dislikes: string[];
+  /** @maxItems 4 */
+  preferredMealTypes?: RecommendationInputPreferredMealTypesItem[];
   mealsPerWeek: RecommendationInputMealsPerWeek;
 }

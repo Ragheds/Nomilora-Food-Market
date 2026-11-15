@@ -1,3 +1,5 @@
+> Historical audit before the Phase C implementation. See [current checkpoint](../../docs/CHECKPOINT.md) for verified changes and limits.
+
 # Nomilora Phase 1 audit — November 12, 2026
 
 Inspected in the existing Replit project through the connected browser: source, running preview, launch ZIP quick-start requirements and master-spec scope, original assets, build, and API behavior. No Agent generation, upgrade, paid purchase, publishing, payment activation, or external port exposure was performed.
