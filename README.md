@@ -51,4 +51,4 @@ pnpm --filter @workspace/db migrate
 
 Checkout remains the existing zero-charge simulation and creates no real order. Stripe payments/subscriptions/refunds, persistent order records, partner approvals/portals, support messaging, delivery operations, admin operational dashboards, and notifications are subsequent milestones. The catalog is still 16 illustrative server-side fixtures, not an approved restaurant menu or a database-managed catalog. No Olia Greens public listing is present. Legal, allergen, nutrition, image rights, kitchen agreements, insurance, tax, and operational reviews remain open. PWA installation/device/offline testing is not a full sign-off.
 
-No public deployment, live payment, real delivery, paid service, or production database mutation is authorized by this checkpoint. Configure and test the account workflow before advancing to durable orders and Stripe test mode.
+No public deployment, live payment, real delivery, or paid service was enabled. No hosted database mutation was performed; its migration remains pending a schema-baseline review. Configure and test the account workflow before advancing to durable orders and Stripe test mode.

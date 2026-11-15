@@ -11,7 +11,7 @@ The original Replit Git history was scanned for common credential patterns and s
 - Seven browser-storage/write-queue tests pass, covering malformed local data, quantity normalization, allergen preservation, serialized saves/retry, and preventing queued saves after sign-out.
 - Nine account integration/security tests pass against Express + PGlite: new database migrations and repeated migration run; anonymous/forged-token rejection; customer-only bootstrap; profile/preferences/cart/favorites persistence and isolation; invalid basket data rejection; address ownership/default constraints; database roles and revocation; foreign-origin/body-limit handling; Supabase verification error handling; rate limits despite spoofed forwarded IPs.
 - Eight running-API smoke tests pass: 16 demo meals/details; disabled launch systems; strict allergy/diet exclusion; deterministic recommendations; invalid checkout rejection; server-priced zero-charge simulations; preferred meal types.
-- Chrome local rendering verified for the original customer homepage and honest unconfigured account screen. The configured Supabase email and signed-in UI journeys have not been browser-verified: the project is not configured yet.
+- Chrome local rendering verified for the original customer homepage and honest unconfigured account screen. The guest add-to-cart → demo checkout → explicit zero-charge confirmation flow was also verified in Chrome. The configured Supabase email and signed-in UI journeys have not been browser-verified: the project is not configured yet.
 
 ## Current limits and next checkpoint
 

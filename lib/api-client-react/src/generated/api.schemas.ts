@@ -316,7 +316,48 @@ export interface AddressId {
   id: string;
 }
 
-export type SavedCustomerAddress = CustomerAddressInput & AddressId;
+export type SavedCustomerAddressCountryCode = typeof SavedCustomerAddressCountryCode[keyof typeof SavedCustomerAddressCountryCode];
+
+
+export const SavedCustomerAddressCountryCode = {
+  US: 'US',
+} as const;
+
+export interface SavedCustomerAddress {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  label: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  recipientName: string;
+  /** @maxLength 30 */
+  phoneNumber?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  street1: string;
+  /** @maxLength 200 */
+  street2?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  city: string;
+  /** @pattern ^[A-Z]{2}$ */
+  region: string;
+  /** @pattern ^\d{5}(-\d{4})?$ */
+  postalCode: string;
+  countryCode?: SavedCustomerAddressCountryCode;
+  /** @maxLength 500 */
+  deliveryInstructions?: string;
+  isDefault?: boolean;
+  id: string;
+}
 
 export type CustomerAccountCart = {[key: string]: number};
 

@@ -376,6 +376,7 @@ function MealDetails() {
 function DetailLine({ label, value }: { label: string; value: string }) { return <div className="grid grid-cols-[100px_1fr] gap-3 border-b border-[#e9e4d9] pb-3"><span className="font-semibold text-[#34513a]">{label}</span><span>{value}</span></div>; }
 
 function Cart() {
+  const { session } = useAuth();
   const { meals, cart, setCart, readiness } = useApp();
   const [zipCode, setZipCode] = useState('');
   const [deliveryChecked, setDeliveryChecked] = useState(false);
@@ -388,7 +389,7 @@ function Cart() {
     setCart(next);
   };
   return <div className="mx-auto max-w-[1100px] px-5 py-10 md:px-10 md:py-16">
-    <p className="eyebrow">Your saved selection</p><h1 className="serif mt-2 text-5xl text-[#173b27]">Preview cart</h1><p className="mt-3 text-[#677165]">Nothing here is an active order. Your selection is saved on this device.</p>
+    <p className="eyebrow">Your saved selection</p><h1 className="serif mt-2 text-5xl text-[#173b27]">Preview cart</h1><p className="mt-3 text-[#677165]">Nothing here is an active order. {session ? 'Changes sync to your account; check the save status above.' : 'Your selection is saved on this device.'}</p>
     <div className="mt-7"><StatusNotice readiness={readiness} /></div>
     {!rows.length ? <div className="mt-9"><EmptyState title="Your table is still clear" text="Add a dish from the menu preview and it will be saved here." action="Browse the menu" href="/explore" /></div> : <div className="mt-9 grid items-start gap-8 md:grid-cols-[1fr_340px]">
       <div className="space-y-3">{rows.map(({ meal, id, quantity }) => <article key={id} className="flex gap-4 rounded-2xl border border-[#e1dccf] bg-[#fbf9f3] p-3 sm:gap-5 sm:p-4">
@@ -449,6 +450,7 @@ const ALLERGEN_OPTIONS = ['Milk', 'Egg', 'Fish', 'Crustacean shellfish', 'Tree n
 const WEEK_OPTIONS = ['One-time', '3–4', '5–7', '8–10', '10+'];
 const STRICT_DIETARY_STYLES = ['Vegan', 'Vegetarian', 'Pescatarian', 'Halal preference', 'Kosher preference', 'Low Carb', 'Keto', 'Dairy avoidance', 'Gluten avoidance'];
 function Quiz() {
+  const { session } = useAuth();
   const { profile, setProfile, meals } = useApp();
   const recommendation = useGetRecommendations();
   const [step, setStep] = useState(0);
@@ -464,7 +466,7 @@ function Quiz() {
   const recommended = profile.strictAllergens.length ? [] : result?.recommendations.map((entry) => meals.find((meal) => meal.id === entry.mealId)).filter((meal): meal is Meal => !!meal) ?? [];
   const hasStrictDietaryPreference = profile.eatingStyles.some((style) => STRICT_DIETARY_STYLES.includes(style));
   return <div className="mx-auto max-w-[960px] px-5 py-10 md:px-10 md:py-16">
-    <p className="eyebrow">The Nomilora taste quiz</p><h1 className="serif mt-2 text-5xl text-[#173b27] md:text-6xl">A menu that feels like yours.</h1><p className="mt-3 max-w-xl text-[#667064]">Optional, editable, and saved only in this browser. These are preference matches, not safety or nutrition advice.</p>
+    <p className="eyebrow">The Nomilora taste quiz</p><h1 className="serif mt-2 text-5xl text-[#173b27] md:text-6xl">A menu that feels like yours.</h1><p className="mt-3 max-w-xl text-[#667064]">Optional and editable. {session ? 'Changes sync to your account; check the save status above.' : 'Saved only in this browser.'} These are preference matches, not safety or nutrition advice.</p>
     <div className="mt-8 flex gap-2" aria-label={`Step ${step + 1} of 5`}>{steps.map((label, index) => <div key={label} className={`h-1.5 flex-1 rounded-full ${index <= step ? 'bg-[#173b27]' : 'bg-[#dedbcf]'}`} />)}</div>
     <section className="mt-5 rounded-[26px] border border-[#dfdacd] bg-[#fbf9f3] p-5 sm:p-9">
       <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#a34d2c]">Step {step + 1} of 5</p><span className="text-xs text-[#878476]">{steps[step]}</span></div>

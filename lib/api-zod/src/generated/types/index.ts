@@ -42,3 +42,4 @@ export * from './recommendationInputPreferredMealTypesItem';
 export * from './recommendationInputStrictAllergensItem';
 export * from './recommendationResponse';
 export * from './savedCustomerAddress';
+export * from './savedCustomerAddressCountryCode';

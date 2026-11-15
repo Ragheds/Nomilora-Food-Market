@@ -5,7 +5,40 @@
  * Typed customer-facing API for the Nomilora Phase 1 demo.
  * OpenAPI spec version: 0.1.0
  */
-import type { AddressId } from './addressId';
-import type { CustomerAddressInput } from './customerAddressInput';
+import type { SavedCustomerAddressCountryCode } from './savedCustomerAddressCountryCode';
 
-export type SavedCustomerAddress = CustomerAddressInput & AddressId;
+export interface SavedCustomerAddress {
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  label: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  recipientName: string;
+  /** @maxLength 30 */
+  phoneNumber?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  street1: string;
+  /** @maxLength 200 */
+  street2?: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  city: string;
+  /** @pattern ^[A-Z]{2}$ */
+  region: string;
+  /** @pattern ^\d{5}(-\d{4})?$ */
+  postalCode: string;
+  countryCode?: SavedCustomerAddressCountryCode;
+  /** @maxLength 500 */
+  deliveryInstructions?: string;
+  isDefault?: boolean;
+  id: string;
+}

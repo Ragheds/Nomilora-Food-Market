@@ -171,21 +171,21 @@ export const getCustomerAccountResponsePreferencesPreferredMealTypesMax = 4;
 
 export const getCustomerAccountResponseCartMaxOne = 20;
 
-export const getCustomerAccountResponseAddressesItemOneLabelMax = 200;
+export const getCustomerAccountResponseAddressesItemLabelMax = 200;
 
-export const getCustomerAccountResponseAddressesItemOneRecipientNameMax = 200;
+export const getCustomerAccountResponseAddressesItemRecipientNameMax = 200;
 
-export const getCustomerAccountResponseAddressesItemOnePhoneNumberMax = 30;
+export const getCustomerAccountResponseAddressesItemPhoneNumberMax = 30;
 
-export const getCustomerAccountResponseAddressesItemOneStreet1Max = 200;
+export const getCustomerAccountResponseAddressesItemStreet1Max = 200;
 
-export const getCustomerAccountResponseAddressesItemOneStreet2Max = 200;
+export const getCustomerAccountResponseAddressesItemStreet2Max = 200;
 
-export const getCustomerAccountResponseAddressesItemOneCityMax = 200;
+export const getCustomerAccountResponseAddressesItemCityMax = 200;
 
-export const getCustomerAccountResponseAddressesItemOneRegionRegExp = new RegExp('^[A-Z]{2}$');
-export const getCustomerAccountResponseAddressesItemOnePostalCodeRegExp = new RegExp('^\\d{5}(-\\d{4})?$');
-export const getCustomerAccountResponseAddressesItemOneDeliveryInstructionsMax = 500;
+export const getCustomerAccountResponseAddressesItemRegionRegExp = new RegExp('^[A-Z]{2}$');
+export const getCustomerAccountResponseAddressesItemPostalCodeRegExp = new RegExp('^\\d{5}(-\\d{4})?$');
+export const getCustomerAccountResponseAddressesItemDeliveryInstructionsMax = 500;
 
 
 
@@ -207,20 +207,19 @@ export const GetCustomerAccountResponse = zod.object({
   "cart": zod.record(zod.string(), zod.number().int().min(1).max(getCustomerAccountResponseCartMaxOne)),
   "favorites": zod.array(zod.string()),
   "addresses": zod.array(zod.object({
-  "label": zod.string().min(1).max(getCustomerAccountResponseAddressesItemOneLabelMax),
-  "recipientName": zod.string().min(1).max(getCustomerAccountResponseAddressesItemOneRecipientNameMax),
-  "phoneNumber": zod.string().max(getCustomerAccountResponseAddressesItemOnePhoneNumberMax).optional(),
-  "street1": zod.string().min(1).max(getCustomerAccountResponseAddressesItemOneStreet1Max),
-  "street2": zod.string().max(getCustomerAccountResponseAddressesItemOneStreet2Max).optional(),
-  "city": zod.string().min(1).max(getCustomerAccountResponseAddressesItemOneCityMax),
-  "region": zod.string().regex(getCustomerAccountResponseAddressesItemOneRegionRegExp),
-  "postalCode": zod.string().regex(getCustomerAccountResponseAddressesItemOnePostalCodeRegExp),
+  "label": zod.string().min(1).max(getCustomerAccountResponseAddressesItemLabelMax),
+  "recipientName": zod.string().min(1).max(getCustomerAccountResponseAddressesItemRecipientNameMax),
+  "phoneNumber": zod.string().max(getCustomerAccountResponseAddressesItemPhoneNumberMax).optional(),
+  "street1": zod.string().min(1).max(getCustomerAccountResponseAddressesItemStreet1Max),
+  "street2": zod.string().max(getCustomerAccountResponseAddressesItemStreet2Max).optional(),
+  "city": zod.string().min(1).max(getCustomerAccountResponseAddressesItemCityMax),
+  "region": zod.string().regex(getCustomerAccountResponseAddressesItemRegionRegExp),
+  "postalCode": zod.string().regex(getCustomerAccountResponseAddressesItemPostalCodeRegExp),
   "countryCode": zod.enum(['US']).optional(),
-  "deliveryInstructions": zod.string().max(getCustomerAccountResponseAddressesItemOneDeliveryInstructionsMax).optional(),
-  "isDefault": zod.boolean().optional()
-}).and(zod.object({
+  "deliveryInstructions": zod.string().max(getCustomerAccountResponseAddressesItemDeliveryInstructionsMax).optional(),
+  "isDefault": zod.boolean().optional(),
   "id": zod.string().uuid()
-})))
+}))
 })
 
 
