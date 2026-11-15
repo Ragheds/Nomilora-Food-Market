@@ -99,12 +99,17 @@ export const GetLaunchReadinessResponse = zod.object({
 /**
  * @summary Recommend illustrative meals from quiz preferences
  */
+export const getRecommendationsBodyPreferredMealTypesMax = 4;
+
+
+
 export const GetRecommendationsBody = zod.object({
   "eatingStyles": zod.array(zod.enum(['Everything', 'Vegan', 'Vegetarian', 'Pescatarian', 'High Protein', 'Halal preference', 'Kosher preference', 'Low Carb', 'Keto', 'Dairy avoidance', 'Gluten avoidance', 'Soups or blended meals'])),
   "goals": zod.array(zod.enum(['Convenience', 'Delicious everyday meals', 'Balanced meals', 'More protein', 'More vegetables', 'Discover new cuisines', 'Family meals'])),
   "cuisines": zod.array(zod.enum(['American', 'Italian', 'Mediterranean', 'Middle Eastern', 'Mexican', 'Indian', 'Japanese', 'Korean', 'Chinese-inspired', 'Other'])),
   "strictAllergens": zod.array(zod.enum(['Milk', 'Egg', 'Fish', 'Crustacean shellfish', 'Tree nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'])),
   "dislikes": zod.array(zod.string()),
+  "preferredMealTypes": zod.array(zod.enum(['Breakfast', 'Lunch', 'Dinner', 'Soup or light meal'])).max(getRecommendationsBodyPreferredMealTypesMax).optional(),
   "mealsPerWeek": zod.enum(['One-time', '3–4', '5–7', '8–10', '10+'])
 })
 
@@ -155,6 +160,231 @@ export const SimulateDemoCheckoutResponse = zod.object({
   "lineTotalCents": zod.number().int()
 })),
   "message": zod.string()
+})
+
+
+export const getCustomerAccountResponseDisplayNameMax = 200;
+
+export const getCustomerAccountResponsePhoneNumberMax = 30;
+
+export const getCustomerAccountResponsePreferencesPreferredMealTypesMax = 4;
+
+export const getCustomerAccountResponseCartMaxOne = 20;
+
+export const getCustomerAccountResponseAddressesItemLabelMax = 200;
+
+export const getCustomerAccountResponseAddressesItemRecipientNameMax = 200;
+
+export const getCustomerAccountResponseAddressesItemPhoneNumberMax = 30;
+
+export const getCustomerAccountResponseAddressesItemStreet1Max = 200;
+
+export const getCustomerAccountResponseAddressesItemStreet2Max = 200;
+
+export const getCustomerAccountResponseAddressesItemCityMax = 200;
+
+export const getCustomerAccountResponseAddressesItemRegionRegExp = new RegExp('^[A-Z]{2}$');
+export const getCustomerAccountResponseAddressesItemPostalCodeRegExp = new RegExp('^\\d{5}(-\\d{4})?$');
+export const getCustomerAccountResponseAddressesItemDeliveryInstructionsMax = 500;
+
+
+
+export const GetCustomerAccountResponse = zod.object({
+  "id": zod.string().uuid(),
+  "email": zod.string().nullable(),
+  "displayName": zod.string().max(getCustomerAccountResponseDisplayNameMax),
+  "phoneNumber": zod.string().max(getCustomerAccountResponsePhoneNumberMax),
+  "roles": zod.array(zod.enum(['customer', 'restaurant_employee', 'restaurant_manager', 'support_agent', 'operations_admin', 'founder_admin'])),
+  "preferences": zod.object({
+  "eatingStyles": zod.array(zod.enum(['Everything', 'Vegan', 'Vegetarian', 'Pescatarian', 'High Protein', 'Halal preference', 'Kosher preference', 'Low Carb', 'Keto', 'Dairy avoidance', 'Gluten avoidance', 'Soups or blended meals'])),
+  "goals": zod.array(zod.enum(['Convenience', 'Delicious everyday meals', 'Balanced meals', 'More protein', 'More vegetables', 'Discover new cuisines', 'Family meals'])),
+  "cuisines": zod.array(zod.enum(['American', 'Italian', 'Mediterranean', 'Middle Eastern', 'Mexican', 'Indian', 'Japanese', 'Korean', 'Chinese-inspired', 'Other'])),
+  "strictAllergens": zod.array(zod.enum(['Milk', 'Egg', 'Fish', 'Crustacean shellfish', 'Tree nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'])),
+  "dislikes": zod.array(zod.string()),
+  "preferredMealTypes": zod.array(zod.enum(['Breakfast', 'Lunch', 'Dinner', 'Soup or light meal'])).max(getCustomerAccountResponsePreferencesPreferredMealTypesMax).optional(),
+  "mealsPerWeek": zod.enum(['One-time', '3–4', '5–7', '8–10', '10+'])
+}),
+  "cart": zod.record(zod.string(), zod.number().int().min(1).max(getCustomerAccountResponseCartMaxOne)),
+  "favorites": zod.array(zod.string()),
+  "addresses": zod.array(zod.object({
+  "label": zod.string().min(1).max(getCustomerAccountResponseAddressesItemLabelMax),
+  "recipientName": zod.string().min(1).max(getCustomerAccountResponseAddressesItemRecipientNameMax),
+  "phoneNumber": zod.string().max(getCustomerAccountResponseAddressesItemPhoneNumberMax).optional(),
+  "street1": zod.string().min(1).max(getCustomerAccountResponseAddressesItemStreet1Max),
+  "street2": zod.string().max(getCustomerAccountResponseAddressesItemStreet2Max).optional(),
+  "city": zod.string().min(1).max(getCustomerAccountResponseAddressesItemCityMax),
+  "region": zod.string().regex(getCustomerAccountResponseAddressesItemRegionRegExp),
+  "postalCode": zod.string().regex(getCustomerAccountResponseAddressesItemPostalCodeRegExp),
+  "countryCode": zod.enum(['US']).optional(),
+  "deliveryInstructions": zod.string().max(getCustomerAccountResponseAddressesItemDeliveryInstructionsMax).optional(),
+  "isDefault": zod.boolean().optional(),
+  "id": zod.string().uuid()
+}))
+})
+
+
+export const updateCustomerProfileBodyDisplayNameMax = 200;
+
+export const updateCustomerProfileBodyPhoneNumberMax = 30;
+
+
+
+export const UpdateCustomerProfileBody = zod.object({
+  "displayName": zod.string().max(updateCustomerProfileBodyDisplayNameMax),
+  "phoneNumber": zod.string().max(updateCustomerProfileBodyPhoneNumberMax)
+})
+
+export const UpdateCustomerProfileResponse = zod.void()
+
+
+export const updateCustomerPreferencesBodyPreferredMealTypesMax = 4;
+
+
+
+export const UpdateCustomerPreferencesBody = zod.object({
+  "eatingStyles": zod.array(zod.enum(['Everything', 'Vegan', 'Vegetarian', 'Pescatarian', 'High Protein', 'Halal preference', 'Kosher preference', 'Low Carb', 'Keto', 'Dairy avoidance', 'Gluten avoidance', 'Soups or blended meals'])),
+  "goals": zod.array(zod.enum(['Convenience', 'Delicious everyday meals', 'Balanced meals', 'More protein', 'More vegetables', 'Discover new cuisines', 'Family meals'])),
+  "cuisines": zod.array(zod.enum(['American', 'Italian', 'Mediterranean', 'Middle Eastern', 'Mexican', 'Indian', 'Japanese', 'Korean', 'Chinese-inspired', 'Other'])),
+  "strictAllergens": zod.array(zod.enum(['Milk', 'Egg', 'Fish', 'Crustacean shellfish', 'Tree nuts', 'Peanuts', 'Wheat', 'Soy', 'Sesame'])),
+  "dislikes": zod.array(zod.string()),
+  "preferredMealTypes": zod.array(zod.enum(['Breakfast', 'Lunch', 'Dinner', 'Soup or light meal'])).max(updateCustomerPreferencesBodyPreferredMealTypesMax).optional(),
+  "mealsPerWeek": zod.enum(['One-time', '3–4', '5–7', '8–10', '10+'])
+})
+
+export const UpdateCustomerPreferencesResponse = zod.void()
+
+
+export const replaceCustomerCartBodyItemsItemMealIdMax = 100;
+
+
+export const replaceCustomerCartBodyItemsItemMealIdRegExp = new RegExp('^[a-z0-9-]+$');
+export const replaceCustomerCartBodyItemsItemQuantityMax = 20;
+
+export const replaceCustomerCartBodyItemsMax = 50;
+
+
+
+export const ReplaceCustomerCartBody = zod.object({
+  "items": zod.array(zod.object({
+  "mealId": zod.string().max(replaceCustomerCartBodyItemsItemMealIdMax).regex(replaceCustomerCartBodyItemsItemMealIdRegExp),
+  "quantity": zod.number().int().min(1).max(replaceCustomerCartBodyItemsItemQuantityMax)
+})).max(replaceCustomerCartBodyItemsMax)
+})
+
+export const ReplaceCustomerCartResponse = zod.void()
+
+
+export const SaveCustomerMealParams = zod.object({
+  "mealId": zod.coerce.string()
+})
+
+export const SaveCustomerMealResponse = zod.void()
+
+
+export const RemoveCustomerMealParams = zod.object({
+  "mealId": zod.coerce.string()
+})
+
+export const RemoveCustomerMealResponse = zod.void()
+
+
+export const createCustomerAddressBodyLabelMax = 200;
+
+export const createCustomerAddressBodyRecipientNameMax = 200;
+
+export const createCustomerAddressBodyPhoneNumberMax = 30;
+
+export const createCustomerAddressBodyStreet1Max = 200;
+
+export const createCustomerAddressBodyStreet2Max = 200;
+
+export const createCustomerAddressBodyCityMax = 200;
+
+export const createCustomerAddressBodyRegionRegExp = new RegExp('^[A-Z]{2}$');
+export const createCustomerAddressBodyPostalCodeRegExp = new RegExp('^\\d{5}(-\\d{4})?$');
+export const createCustomerAddressBodyDeliveryInstructionsMax = 500;
+
+
+
+export const CreateCustomerAddressBody = zod.object({
+  "label": zod.string().min(1).max(createCustomerAddressBodyLabelMax),
+  "recipientName": zod.string().min(1).max(createCustomerAddressBodyRecipientNameMax),
+  "phoneNumber": zod.string().max(createCustomerAddressBodyPhoneNumberMax).optional(),
+  "street1": zod.string().min(1).max(createCustomerAddressBodyStreet1Max),
+  "street2": zod.string().max(createCustomerAddressBodyStreet2Max).optional(),
+  "city": zod.string().min(1).max(createCustomerAddressBodyCityMax),
+  "region": zod.string().regex(createCustomerAddressBodyRegionRegExp),
+  "postalCode": zod.string().regex(createCustomerAddressBodyPostalCodeRegExp),
+  "countryCode": zod.enum(['US']).optional(),
+  "deliveryInstructions": zod.string().max(createCustomerAddressBodyDeliveryInstructionsMax).optional(),
+  "isDefault": zod.boolean().optional()
+})
+
+export const CreateCustomerAddressResponse = zod.object({
+  "id": zod.string().uuid()
+})
+
+
+export const UpdateCustomerAddressParams = zod.object({
+  "addressId": zod.coerce.string().uuid()
+})
+
+export const updateCustomerAddressBodyLabelMax = 200;
+
+export const updateCustomerAddressBodyRecipientNameMax = 200;
+
+export const updateCustomerAddressBodyPhoneNumberMax = 30;
+
+export const updateCustomerAddressBodyStreet1Max = 200;
+
+export const updateCustomerAddressBodyStreet2Max = 200;
+
+export const updateCustomerAddressBodyCityMax = 200;
+
+export const updateCustomerAddressBodyRegionRegExp = new RegExp('^[A-Z]{2}$');
+export const updateCustomerAddressBodyPostalCodeRegExp = new RegExp('^\\d{5}(-\\d{4})?$');
+export const updateCustomerAddressBodyDeliveryInstructionsMax = 500;
+
+
+
+export const UpdateCustomerAddressBody = zod.object({
+  "label": zod.string().min(1).max(updateCustomerAddressBodyLabelMax),
+  "recipientName": zod.string().min(1).max(updateCustomerAddressBodyRecipientNameMax),
+  "phoneNumber": zod.string().max(updateCustomerAddressBodyPhoneNumberMax).optional(),
+  "street1": zod.string().min(1).max(updateCustomerAddressBodyStreet1Max),
+  "street2": zod.string().max(updateCustomerAddressBodyStreet2Max).optional(),
+  "city": zod.string().min(1).max(updateCustomerAddressBodyCityMax),
+  "region": zod.string().regex(updateCustomerAddressBodyRegionRegExp),
+  "postalCode": zod.string().regex(updateCustomerAddressBodyPostalCodeRegExp),
+  "countryCode": zod.enum(['US']).optional(),
+  "deliveryInstructions": zod.string().max(updateCustomerAddressBodyDeliveryInstructionsMax).optional(),
+  "isDefault": zod.boolean().optional()
+})
+
+export const UpdateCustomerAddressResponse = zod.object({
+  "id": zod.string().uuid()
+})
+
+
+export const DeleteCustomerAddressParams = zod.object({
+  "addressId": zod.coerce.string().uuid()
+})
+
+export const DeleteCustomerAddressResponse = zod.void()
+
+
+export const CheckAdminAccessResponse = zod.object({
+  "allowed": zod.boolean()
+})
+
+
+export const CheckSupportAccessResponse = zod.object({
+  "allowed": zod.boolean()
+})
+
+
+export const CheckPartnerAccessResponse = zod.object({
+  "allowed": zod.boolean()
 })
 
 

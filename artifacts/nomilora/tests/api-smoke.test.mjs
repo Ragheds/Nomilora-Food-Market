@@ -10,3 +10,9 @@ test('strict dietary restrictions fail closed until menu labels are verified', a
 test('recommendations rank deterministically and reject malformed inputs', async () => { const first = await call('/recommendations', prefs); const second = await call('/recommendations', prefs); assert.equal(first.status, 200); assert.ok(first.data.recommendations.length > 0); assert.deepEqual(first.data, second.data); assert.equal((await call('/recommendations', null)).status, 400); });
 test('demo checkout rejects missing acknowledgment, invalid quantities and unknown meals', async () => { const { data } = await call('/meals'); for (const body of [{ items: [{ mealId: data[0].id, quantity: 1 }], acknowledgedDemoOnly: false }, { items: [{ mealId: data[0].id, quantity: 21 }], acknowledgedDemoOnly: true }, { items: [{ mealId: 'missing', quantity: 1 }], acknowledgedDemoOnly: true }, { items: [], acknowledgedDemoOnly: true }]) assert.equal((await call('/demo-checkouts', body)).status, 400); });
 test('demo total is computed by server and never charges', async () => { const { data } = await call('/meals'); const result = await call('/demo-checkouts', { items: [{ mealId: data[0].id, quantity: 2 }], acknowledgedDemoOnly: true, subtotalCents: 1 }); assert.equal(result.status, 200); assert.equal(result.data.subtotalCents, data[0].priceCents * 2); assert.equal(result.data.status, 'simulated'); assert.equal(result.data.paymentStatus, 'not_charged'); });
+
+test('meal type preferences exclude other meal types', async () => {
+  const result = await call('/recommendations', { ...prefs, preferredMealTypes: ['Breakfast'] });
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.data.recommendations.map(item => item.mealId), ['egg-breakfast-plate']);
+});

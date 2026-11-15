@@ -8,7 +8,7 @@
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --experimental-strip-types --test tests/storage.test.mts",
+    "test": "node --experimental-strip-types --test tests/*.test.mts",
     "test:api": "node --test tests/api-smoke.test.mjs"
   },
   "devDependencies": {
@@ -75,5 +75,9 @@
     "vite": "catalog:",
     "wouter": "^3.3.5",
     "zod": "catalog:"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.99.0",
+    "@workspace/api-zod": "workspace:*"
   }
 }

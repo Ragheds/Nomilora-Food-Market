@@ -7,7 +7,7 @@ const line = z.object({ mealId: z.string(), name: z.string(), quantity: z.number
 const schemas: Record<string, z.ZodType> = {
   'nomilora-cart-v1': z.record(z.string(), z.number().int().nonnegative()).transform(normalizeCart),
   'nomilora-favorites-v1': strings,
-  'nomilora-preferences-v1': z.object({ eatingStyles: strings, goals: strings, cuisines: strings, strictAllergens: strings, dislikes: strings, mealsPerWeek: z.string() }),
+  'nomilora-preferences-v1': z.object({ preferredMealTypes: strings.optional(), eatingStyles: strings, goals: strings, cuisines: strings, strictAllergens: strings, dislikes: strings, mealsPerWeek: z.string() }),
   'nomilora-demo-history-v1': z.array(z.object({ demoId: z.string(), createdAt: z.string().refine(v => Number.isFinite(Date.parse(v))), status: z.literal('simulated'), paymentStatus: z.literal('not_charged'), itemCount: z.number().int().nonnegative(), subtotalCents: z.number().int().nonnegative(), items: z.array(line), message: z.string() })).max(100),
 };
 export function readStored<T>(key: string, fallback: T): T {
