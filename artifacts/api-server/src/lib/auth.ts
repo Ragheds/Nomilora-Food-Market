@@ -2,7 +2,11 @@ import type { RequestHandler } from "express";
 import { z } from "zod";
 import type { Role } from "@workspace/api-zod/account";
 
-export type Identity = { subject: string; email: string };
+export type Identity = {
+  subject: string;
+  email: string;
+  mfaVerified?: boolean;
+};
 export type VerifyToken = (token: string) => Promise<Identity>;
 export class AuthFailure extends Error {
   constructor(
@@ -55,7 +59,21 @@ export const verifySupabaseToken: VerifyToken = async (token) => {
       403,
       "Verify your email before accessing your account.",
     );
-  return { subject: user.id, email: user.email };
+  // The Auth server has already validated this exact JWT. Only then inspect its signed AAL claim.
+  let mfaVerified = false;
+  try {
+    const claims = JSON.parse(
+      Buffer.from(token.split(".")[1] ?? "", "base64url").toString("utf8"),
+    );
+    mfaVerified = claims.sub === user.id && claims.aal === "aal2";
+  } catch {
+    /* fail closed for privileged routes */
+  }
+  return {
+    subject: user.id,
+    email: user.email,
+    ...(mfaVerified ? { mfaVerified: true } : {}),
+  };
 };
 
 export function authenticate(

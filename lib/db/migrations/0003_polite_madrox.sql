@@ -1,0 +1,1 @@
+ALTER TABLE "catalog_meals" ADD COLUMN "cross_contact_allergens" text[] DEFAULT ARRAY[]::text[] NOT NULL;

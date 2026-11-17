@@ -1,54 +1,45 @@
 # Nomilora Food Market
 
-Existing React/TypeScript/Vite/Tailwind + Express application, continued from Replit checkpoint `69fc1a3`. Exact supplied logo files and the approved visual direction are preserved. This is a development checkpoint, not a launched food service.
+Existing React/TypeScript/Vite/Tailwind + Express + OpenAPI/Zod + PostgreSQL application, continued from Replit source checkpoint `69fc1a3`. The original six logo assets and green/ivory design are preserved. This repository is a **test-only product**, not a launched food service.
+
+## Working software
+
+- Official Supabase Auth registration, login/logout, verification/resend, password recovery, persistent sessions and authenticator MFA. Express verifies tokens with Supabase; PostgreSQL owns roles and account access. Staff operations require MFA.
+- Owned profiles, saved dietary restrictions, favorites, carts and addresses. Verified allergen/diet/cross-contact filtering is consistent across browsing, recommendations and checkout; unverified declarations fail closed for strict restrictions.
+- Database catalog, immutable order/food/price snapshots, atomic inventory and slot reservations, idempotent checkout, order history and scoped kitchen preparation/state transitions. Guest checkout remains a no-charge browser simulation; signed-in test checkout saves actual test records.
+- Stripe **test-only** hosted checkout, verified raw signed webhooks, refunds and weekly plans. Plan billing supports pause, resume, skip and cancel. Paid weekly invoices create one matching saved box/order; stock or missing-selection exceptions go to staff and can be retried without another charge.
+- Customer support tickets/replies, private staff notes, assignment and status; customer notifications and staff queues poll while visible. No external email/SMS/push delivery or human staffing is implied.
+- Private prospective restaurant drafts, versioned menu approval/evidence, scoped kitchen memberships, ZIP zones, capacity/cutoff windows, promotions, test partner payables and preparation exports. Real prospective partners, including Olia Greens, never enter the public test catalog.
+- Founder/admin controls for roles, disabled accounts, inquiries and audit history. Initial founder bootstrap requires a verified account and explicit CLI confirmation; no demo admin password.
+- Consent-based waitlist/partner inquiries; draft information/policy pages; existing PWA manifest, original icons and offline fallback. Private API data is not cached by the service worker.
 
 ## Run locally
 
-Use Node 24 (minimum 22.18) and pnpm 11.25.0. The workspace supports macOS and Linux; it no longer excludes native macOS build dependencies.
+Node 24 and pnpm 11.25.0 are used in CI. No Replit Agent is required.
 
 ```sh
 pnpm install --frozen-lockfile
 cp .env.example .env
+# Fill .env privately. Read docs/SETUP.md before using an existing database.
+pnpm --filter @workspace/db migrate
+pnpm seed:test
 pnpm dev:api
-```
-
-In another terminal:
-
-```sh
+# Another terminal:
 pnpm dev:web
 ```
 
-Open http://localhost:5173. Vite forwards `/api` to localhost:8080. Only the API uses `DATABASE_URL`. Vite loads public `VITE_` configuration from the root `.env`; restart Vite after configuring it. Without Supabase configuration, the account page explicitly says accounts are not configured; guest browsing and local preview baskets still work. Authenticated account requests require both Supabase and PostgreSQL.
-
-## What this checkpoint adds
-
-- Official Supabase browser client for registration, sign-in/out, email confirmation/resend, password recovery, and persistent/refreshing sessions. Passwords go to Supabase, never the Express API or the application database.
-- Express validates each bearer token with the configured Supabase Auth server. Unconfirmed/anonymous users cannot access account data. Application roles come from PostgreSQL on every request, never client claims or editable metadata.
-- Database-backed profiles, preferences, meal-type preferences, favorites, carts, and address CRUD. Ownership is enforced on all operations. Basket replacement and default-address changes use database transactions and per-user locks.
-- Separate guest/account state; account switching remounts the account state. Account changes save in sequence, failures remain visible with an explicit retry, and queued changes are discarded on sign-out. Browser guest data is not automatically imported into a signed-in account. Guest simulation history remains browser-local.
-- Exact-origin CORS, account rate limits, bounded/validated JSON, private-response no-store headers, generic server errors, and sanitized logs.
-- Versioned migrations, regenerated OpenAPI/Zod/client contracts, local database integration tests, and a portable build command.
-- Strict diet filters in Explore now exclude unverified labels. Strict allergies return no recommendations while all catalog declarations are unverified. Preferred meal types filter recommendations.
-
-## Setup and verification
-
-Read [setup](docs/SETUP.md) before configuring authentication or applying migrations to an existing database. Read [checkpoint status](docs/CHECKPOINT.md) for test evidence and remaining work.
+Use `http://localhost:5173`. API defaults to port 8080. To use the configured local Supabase callback at port 15173, run the frontend with `PORT=15173 pnpm dev:web`. The frontend proxy target is configurable with `API_PROXY_TARGET`.
 
 ```sh
 pnpm build
 pnpm test
-# With the API running:
-pnpm --filter @workspace/nomilora test:api
-# Regenerate OpenAPI clients and validators after contract edits:
-pnpm --filter @workspace/api-spec codegen
-# New/empty database only, after setting DATABASE_URL:
-pnpm --filter @workspace/db migrate
+pnpm --filter @workspace/db check
 ```
 
-`pnpm test` uses an isolated embedded PostgreSQL engine (PGlite) and a local Express server, not a hosted database or a billable external service. Supabase verification is mocked only inside tests. No production authentication bypass exists. The archived `artifacts/mockup-sandbox` remains available but is excluded from the production build.
+Tests use isolated PGlite databases and local HTTP listeners. The React acceptance test drives customer basket → durable order → support ticket → agent response → customer response visibility through the real Express/storage layers. Auth identities and Stripe transport are mocked only inside tests. Optional `TEST_DATABASE_URL` exercises the production PostgreSQL driver and concurrent checkout against an empty, loopback database named `nomilora_test`. CI provisions that disposable PostgreSQL 16 service and has no deployment credentials or deployment step.
 
-## Inactive business systems
+## Configuration and release status
 
-Checkout remains the existing zero-charge simulation and creates no real order. Stripe payments/subscriptions/refunds, persistent order records, partner approvals/portals, support messaging, delivery operations, admin operational dashboards, and notifications are subsequent milestones. The catalog is still 16 illustrative server-side fixtures, not an approved restaurant menu or a database-managed catalog. No Olia Greens public listing is present. Legal, allergen, nutrition, image rights, kitchen agreements, insurance, tax, and operational reviews remain open. PWA installation/device/offline testing is not a full sign-off.
+Read [setup](docs/SETUP.md), [checkpoint evidence](docs/CHECKPOINT.md) and [release operations](docs/RELEASE.md). Authentication configuration is separate from application data. A free Nomilora Supabase project exists; its public configuration is stored only in the local ignored `.env`. Do not publish secrets or run migrations blindly against the existing database.
 
-No public deployment, live payment, real delivery, or paid service was enabled. No hosted database mutation was performed; its migration remains pending a schema-baseline review. Configure and test the account workflow before advancing to durable orders and Stripe test mode.
+No live payments, real delivery, paid service or public deployment was enabled. Real-provider registration/recovery/MFA acceptance, existing database baseline/migration, Stripe dashboard test-event acceptance, legal/food-safety/restaurant agreements, tax and launch approval remain required. Draft policy pages are not legal sign-off. PWA device/offline and broader accessibility acceptance remain incomplete. The original archived mockup sandbox is retained but excluded from the product build.

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import {
   addressInput,
@@ -256,7 +256,10 @@ export function AccountPage({ customer }: { customer: Customer }) {
             Addresses do not activate delivery.
           </p>
           {customer.account && (
-            <AccountDetails key={customer.account.id} customer={customer} />
+            <>
+              <MfaSettings />
+              <AccountDetails key={customer.account.id} customer={customer} />
+            </>
           )}
         </>
       )}
@@ -496,5 +499,139 @@ function AccountDetails({ customer }: { customer: Customer }) {
         </form>
       </section>
     </div>
+  );
+}
+
+function MfaSettings() {
+  const { session } = useAuth();
+  const [factorId, setFactor] = useState(""),
+    [qr, setQr] = useState(""),
+    [code, setCode] = useState(""),
+    [status, setStatus] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!supabase || !session) return;
+    let active = true;
+    void Promise.all([
+      supabase.auth.mfa.listFactors(),
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    ]).then(([factors, aal]) => {
+      if (!active) return;
+      if (factors.error || aal.error) {
+        setError("Authenticator settings could not be loaded.");
+        return;
+      }
+      setFactor(factors.data.totp[0]?.id ?? "");
+      setStatus(
+        aal.data.currentLevel === "aal2"
+          ? "Verified for this session"
+          : factors.data.totp.length
+            ? "Enter your authenticator code to verify this session"
+            : "No authenticator enrolled",
+      );
+    });
+    return () => {
+      active = false;
+    };
+  }, [session?.access_token]);
+  const enroll = async () => {
+    if (!supabase) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: `Nomilora authenticator ${Date.now()}`,
+      });
+      if (error) throw error;
+      setFactor(data.id);
+      setQr(data.totp.qr_code);
+      setStatus(
+        "Scan the QR code in your authenticator, then verify its six-digit code.",
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Enrollment failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const verify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !factorId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId,
+        code,
+      });
+      if (error) throw error;
+      setCode("");
+      setQr("");
+      setStatus("Verified for this session");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Verification failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="mt-8 rounded-2xl border border-[#d8d3c6] p-6">
+      <h2 className="serif text-3xl">Two-step account security</h2>
+      <p className="mt-3 text-sm">
+        Staff workflows require a verified authenticator session. Supabase
+        manages enrollment and verification; no custom authentication secrets
+        are stored in Nomilora.
+      </p>
+      <p role="status" className="mt-3 text-sm">
+        {status}
+      </p>
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-[#a34d2c]">
+          {error}
+        </p>
+      )}
+      {qr && (
+        <img
+          alt="Authenticator enrollment QR code"
+          className="mt-4 h-48 w-48"
+          src={
+            qr.startsWith("data:image/")
+              ? qr
+              : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr)}`
+          }
+        />
+      )}
+      {!factorId && (
+        <button
+          disabled={busy}
+          className={`${buttonClass} mt-4`}
+          onClick={() => void enroll()}
+        >
+          Enroll authenticator
+        </button>
+      )}
+      {factorId && status !== "Verified for this session" && (
+        <form onSubmit={verify} className="mt-4 max-w-sm space-y-3">
+          <label className="block text-sm font-semibold">
+            Authenticator code
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+          <button disabled={busy} className={buttonClass}>
+            Verify session
+          </button>
+        </form>
+      )}
+    </section>
   );
 }

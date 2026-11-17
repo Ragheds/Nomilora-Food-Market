@@ -1,0 +1,3 @@
+ALTER TABLE "orders" DROP CONSTRAINT "order_amount_check";--> statement-breakpoint
+ALTER TABLE "order_items" ADD COLUMN "food_snapshot" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
+ALTER TABLE "orders" ADD CONSTRAINT "order_amount_check" CHECK ("orders"."subtotal_cents" >= 0 AND "orders"."discount_cents" >= 0 AND "orders"."total_cents" = "orders"."subtotal_cents" - "orders"."discount_cents" AND "orders"."total_cents" >= 0);

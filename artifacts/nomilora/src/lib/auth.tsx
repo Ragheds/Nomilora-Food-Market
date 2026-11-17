@@ -84,17 +84,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 }
 export const useAuth = () => useContext(AuthContext);
-export async function accountRequest(
+export async function authenticatedRequest(
   subject: string,
-  path = "",
+  url: string,
   method = "GET",
   body?: unknown,
 ) {
   if (!supabase) throw new Error("Account access is not configured.");
+  const target = new URL(url, window.location.origin);
+  if (
+    target.origin !== window.location.origin ||
+    !target.pathname.startsWith("/api/")
+  )
+    throw new Error("Account requests must stay on this application.");
   const { data, error } = await supabase.auth.getSession();
   if (error || !data.session || data.session.user.id !== subject)
     throw new Error("Your session changed. Sign in again before saving.");
-  const response = await fetch(`/api/account${path}`, {
+  const response = await fetch(url, {
     method,
     headers: {
       Authorization: `Bearer ${data.session.access_token}`,
@@ -102,10 +108,28 @@ export async function accountRequest(
     },
     body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
+    signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) {
     const result = await response.json().catch(() => ({}));
     throw new Error(result.error ?? "We could not save your changes.");
   }
   return response.status === 204 ? undefined : response.json();
+}
+
+export function accountRequest(
+  subject: string,
+  path = "",
+  method = "GET",
+  body?: unknown,
+) {
+  return authenticatedRequest(subject, `/api/account${path}`, method, body);
+}
+export function marketRequest(
+  subject: string,
+  path = "",
+  method = "GET",
+  body?: unknown,
+) {
+  return authenticatedRequest(subject, `/api/market${path}`, method, body);
 }

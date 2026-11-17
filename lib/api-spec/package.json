@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "codegen": "orval --config ./orval.config.ts && pnpm -w run typecheck:libs"
+    "codegen": "tsx update-operations-spec.ts && orval --config ./orval.config.ts && pnpm -w run typecheck:libs"
   },
   "devDependencies": {
-    "orval": "^8.41.0"
+    "orval": "^8.41.0",
+    "@workspace/api-zod": "workspace:*",
+    "tsx": "catalog:",
+    "zod": "catalog:",
+    "zod-to-json-schema": "^3.25.1",
+    "yaml": "^2.9.1"
   }
 }

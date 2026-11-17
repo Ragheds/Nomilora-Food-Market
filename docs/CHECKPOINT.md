@@ -1,22 +1,29 @@
-# Development checkpoint — November 15, 2026
+# Product checkpoint — November 16, 2026
 
-## Source takeover
+## Scope delivered in source
 
-The original Replit Git history was scanned for common credential patterns and sensitive credential filenames before synchronization. No matches were found (not a comprehensive secret-audit guarantee). The five existing commits were synchronized to the founder's GitHub repository, and development continued on `codex/phase-c` from `69fc1a3`. Replit Agent was not invoked and no plan was upgraded.
+Original branding and working React/Vite/TypeScript/Tailwind/Express/OpenAPI/Zod features are preserved. PostgreSQL operations extend the original account schema through versioned migrations 0000–0005. Customer, kitchen, support and founder/admin workflows are connected to actual API/storage functions, with test-only gates throughout. See README for the feature inventory and RELEASE.md for acceptance/recovery procedures.
 
-## Verified
+This is a substantial private test platform, **not a claim that every production requirement is complete**. The original source remains in Git history; no Replit Agent, paid upgrade, live charge, delivery or public deployment was used. Real prospective restaurant records, including Olia Greens, cannot appear in the public test catalog.
 
-- Six included PNG brand assets exactly match the original launch-pack assets by SHA-256 comparison; logos were not redesigned.
-- TypeScript checks and production builds for the API and real customer app pass on macOS. The existing tooltip sourcemap warning is non-fatal. The API bundle still emits a size advisory; it is not a failed build.
-- Seven browser-storage/write-queue tests pass, covering malformed local data, quantity normalization, allergen preservation, serialized saves/retry, and preventing queued saves after sign-out.
-- Nine account integration/security tests pass against Express + PGlite: new database migrations and repeated migration run; anonymous/forged-token rejection; customer-only bootstrap; profile/preferences/cart/favorites persistence and isolation; invalid basket data rejection; address ownership/default constraints; database roles and revocation; foreign-origin/body-limit handling; Supabase verification error handling; rate limits despite spoofed forwarded IPs.
-- Eight running-API smoke tests pass: 16 demo meals/details; disabled launch systems; strict allergy/diet exclusion; deterministic recommendations; invalid checkout rejection; server-priced zero-charge simulations; preferred meal types.
-- Chrome local rendering verified for the original customer homepage and honest unconfigured account screen. The guest add-to-cart → demo checkout → explicit zero-charge confirmation flow was also verified in Chrome. The configured Supabase email and signed-in UI journeys have not been browser-verified: the project is not configured yet.
+## Verified locally
 
-## Current limits and next checkpoint
+- Full TypeScript check and production API/customer builds pass on macOS with Node 24/pnpm 11.25.0. Existing tooltip sourcemap and bundle-size advisories remain non-fatal. Operational screens now load as a separate chunk.
+- Seven storage/write-queue tests pass. Twenty-nine API/account/security/operations tests pass with fresh PGlite migrations, including repeated migration runs. Supabase and Stripe are mocked only inside test fixtures.
+- One full React → Express → PostgreSQL-engine acceptance test passes: persisted basket → saved test order → linked ticket → agent private/public replies → customer sees only public replies, including switching identities.
+- Coverage includes ownership/RBAC/MFA, malformed/oversized requests, exact origins, strict verified dietary and cross-contact filtering, immutable prices/food declarations, slot/stock/promotion rollback, idempotency, order transitions, cancellation/expiry/refund release, menu versions/real-prospect privacy, assignment, compensation and inquiries.
+- Official Stripe SDK tests use a mock HTTP transport and real signature generation/verification. They cover weekly price/pause/resume/skip/cancel, signed invoice retrieval, invoice-to-box fulfillment, duplicate invoice suppression, paid stock failures and recovery without another charge. Customer shopping baskets remain intact during subscription fulfillment.
+- A production PostgreSQL-driver concurrency test and isolated PostgreSQL 16 CI service are included. Locally that opt-in test is skipped because no local PostgreSQL server is configured; check GitHub CI before treating it as passed. The guard refuses non-loopback, differently named or nonempty databases.
+- The six original PNG logo assets match the supplied launch-pack originals by SHA-256 comparison.
 
-This is a Phase C implementation checkpoint awaiting real configuration and end-to-end acceptance, not a completed full platform. The existing hosted PostgreSQL schema and migration baseline have not been inspected; no production database was mutated. Configure the free Supabase project and existing application database securely, review the migration baseline, and verify the complete two-account UI workflow and recovery emails before declaring Phase C complete.
+## External configuration observed
 
-Then implement persistent/transactional order records and immutable pricing snapshots, Stripe test payments with verified idempotent webhooks, and subscriptions. Follow with private prospective-partner draft menus/approval (including Olia only as an unapproved prospect with no public listing), kitchen assignment isolation, support tickets/messages, delivery-zone/scheduling foundations, admin operations and notifications. Retain the existing PWA and expand mobile/offline/accessibility tests. The catalog itself still needs a persistence/approval model.
+The free Nomilora Supabase project exists. Its public Auth settings returned HTTP 200, with confirmation required and anonymous sign-in disabled. TOTP is enabled; local callbacks and a 12-character password minimum were saved. Only public URL/publishable-key values were written to the ignored local `.env`; no Supabase database password or secret key was accessed.
 
-No paid external service, real payment, delivery, public Olia listing, or public app deployment was enabled.
+A read-only query in the original Replit shell showed eight public account tables and no Drizzle journal. No hosted schema/data mutation occurred. `pnpm db:inspect` now compares the live columns, enums, constraints, indexes, row-security flags and triggers to migration 0000 inside a read-only transaction and reports fingerprints/counts without customer rows or connection strings. A baseline match, restorable private backup and reviewed journal adoption are still required before migrations.
+
+## Open acceptance and launch work
+
+Existing Replit PostgreSQL has not yet been connected locally or migrated to the new operations schema. Real registration/email recovery/persistent-session/MFA acceptance still needs user password/email interaction and application database configuration. Stripe test account keys/signing endpoint are not configured; no real provider test checkout has been performed. Custom SMTP/domain configuration is not provisioned. Policy pages, commercial pricing, food-safety declarations, image rights, restaurant agreements, tax/insurance/delivery staffing and legal/privacy-retention review are not approved.
+
+PWA manifest/offline fallback are retained and private API caching is excluded; full physical-device/browser/accessibility/load/security acceptance remains open. Notifications are in-app polling, not configured outbound email/SMS/push. Partial refunds, real payouts and live billing are not implemented. Keep all real-world actions disabled until explicit founder approval and a reviewed release plan.

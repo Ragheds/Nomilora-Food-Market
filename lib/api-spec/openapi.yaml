@@ -1,9 +1,8 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: Typed customer-facing API for the Nomilora Phase 1 demo.
+  description: Nomilora development API. All commerce and delivery operations are test-only. Live operations are disabled.
 servers:
   - url: /api
     description: Base API path
@@ -20,7 +19,8 @@ paths:
   /healthz:
     get:
       operationId: healthCheck
-      tags: [health]
+      tags:
+        - health
       summary: Health check
       description: Returns server health status
       responses:
@@ -33,7 +33,8 @@ paths:
   /meals:
     get:
       operationId: listMeals
-      tags: [meals]
+      tags:
+        - meals
       summary: List illustrative meals
       responses:
         "200":
@@ -47,7 +48,8 @@ paths:
   /meals/{mealId}:
     get:
       operationId: getMeal
-      tags: [meals]
+      tags:
+        - meals
       summary: Get a meal by identifier
       parameters:
         - name: mealId
@@ -71,7 +73,8 @@ paths:
   /launch-readiness:
     get:
       operationId: getLaunchReadiness
-      tags: [meals]
+      tags:
+        - meals
       summary: Get configured delivery and payment status
       responses:
         "200":
@@ -83,7 +86,8 @@ paths:
   /recommendations:
     post:
       operationId: getRecommendations
-      tags: [recommendations]
+      tags:
+        - recommendations
       summary: Recommend illustrative meals from quiz preferences
       requestBody:
         required: true
@@ -107,7 +111,8 @@ paths:
   /demo-checkouts:
     post:
       operationId: simulateDemoCheckout
-      tags: [checkout]
+      tags:
+        - checkout
       summary: Validate a basket and simulate a zero-charge checkout
       requestBody:
         required: true
@@ -134,42 +139,42 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomerAccount'
-        '400':
+                $ref: "#/components/schemas/CustomerAccount"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/profile:
     put:
       operationId: updateCustomerProfile
@@ -180,40 +185,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerProfileInput'
+              $ref: "#/components/schemas/CustomerProfileInput"
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/preferences:
     put:
       operationId: updateCustomerPreferences
@@ -224,40 +229,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecommendationInput'
+              $ref: "#/components/schemas/RecommendationInput"
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/cart:
     put:
       operationId: replaceCustomerCart
@@ -268,40 +273,40 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerCartInput'
+              $ref: "#/components/schemas/CustomerCartInput"
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/favorites/{mealId}:
     parameters:
       - name: mealId
@@ -314,75 +319,75 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: removeCustomerMeal
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/addresses:
     post:
       operationId: createCustomerAddress
@@ -393,44 +398,44 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerAddressInput'
+              $ref: "#/components/schemas/CustomerAddressInput"
       responses:
-        '201':
+        "201":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddressId'
-        '400':
+                $ref: "#/components/schemas/AddressId"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/addresses/{addressId}:
     parameters:
       - name: addressId
@@ -448,88 +453,88 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomerAddressInput'
+              $ref: "#/components/schemas/CustomerAddressInput"
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddressId'
-        '400':
+                $ref: "#/components/schemas/AddressId"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       operationId: deleteCustomerAddress
       security:
         - bearerAuth: []
       responses:
-        '204':
+        "204":
           description: Saved
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/access/admin:
     get:
       operationId: checkAdminAccess
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -540,43 +545,43 @@ paths:
                     type: boolean
                 required:
                   - allowed
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/access/support:
     get:
       operationId: checkSupportAccess
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -587,43 +592,43 @@ paths:
                     type: boolean
                 required:
                   - allowed
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
   /account/access/partner:
     get:
       operationId: checkPartnerAccess
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: Success
           content:
             application/json:
@@ -634,36 +639,3250 @@ paths:
                     type: boolean
                 required:
                   - allowed
-        '400':
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
           description: Sign-in required
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '403':
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
           description: Insufficient permission or unverified email
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '429':
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
           description: Rate limit exceeded
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '503':
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
           description: Account service not configured or unavailable
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/config:
+    get:
+      operationId: getMarketConfiguration
+      summary: get Market Configuration
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mode:
+                    type: string
+                  livePayments:
+                    type: boolean
+                    enum:
+                      - false
+                  realDelivery:
+                    type: boolean
+                    enum:
+                      - false
+                  stripeTestConfigured:
+                    type: boolean
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/catalog:
+    get:
+      operationId: getTestCatalog
+      summary: get Test Catalog
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestCatalogMeal"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/slots:
+    get:
+      operationId: getTestSlots
+      summary: get Test Slots
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestDeliverySlot"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createTestSlot
+      summary: create Test Slot
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestSlotInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: &a1
+                type: object
+                additionalProperties: true
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/orders:
+    get:
+      operationId: getSavedTestOrders
+      summary: get Saved Test Orders
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestOrder"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createSavedTestOrder
+      summary: create Saved Test Order
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MarketCheckoutInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/orders/{id}:
+    get:
+      operationId: getSavedTestOrder
+      summary: get Saved Test Order
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestOrder"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/orders/{id}/pay:
+    post:
+      operationId: resumeTestPayment
+      summary: resume Test Payment
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/orders/{id}/transition:
+    post:
+      operationId: transitionTestOrder
+      summary: transition Test Order
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderTransitionInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/orders/{id}/refund:
+    post:
+      operationId: refundTestOrder
+      summary: refund Test Order
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/tickets:
+    get:
+      operationId: getSupportTickets
+      summary: get Support Tickets
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SupportTicket"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createSupportTicket
+      summary: create Support Ticket
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportTicketInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/tickets/{id}:
+    get:
+      operationId: getSupportTicket
+      summary: get Support Ticket
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportTicket"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateSupportTicket
+      summary: update Support Ticket
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportTicketUpdate"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/tickets/{id}/messages:
+    post:
+      operationId: sendSupportMessage
+      summary: send Support Message
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SupportMessageInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/notifications:
+    get:
+      operationId: getAccountNotifications
+      summary: get Account Notifications
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AccountNotification"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/notifications/{id}/read:
+    put:
+      operationId: markNotificationRead
+      summary: mark Notification Read
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/portal:
+    get:
+      operationId: getStaffPortal
+      summary: get Staff Portal
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffPortal"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/partners:
+    post:
+      operationId: createRestaurantProspect
+      summary: create Restaurant Prospect
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantProspect"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/partners/{id}:
+    put:
+      operationId: reviewRestaurantProspect
+      summary: review Restaurant Prospect
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerReview"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/kitchens:
+    post:
+      operationId: createPartnerKitchen
+      summary: create Partner Kitchen
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KitchenInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartnerKitchen"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/kitchen-members:
+    put:
+      operationId: assignKitchenMember
+      summary: assign Kitchen Member
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KitchenMemberInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: removeKitchenMember
+      summary: remove Kitchen Member
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/KitchenMemberInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/menus:
+    post:
+      operationId: createPrivateMenu
+      summary: create Private Menu
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuDraftInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/menus/{mealId}:
+    put:
+      operationId: updatePrivateMenu
+      summary: update Private Menu
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mealId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuUpdateInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/menus/{mealId}/submit:
+    post:
+      operationId: submitPrivateMenu
+      summary: submit Private Menu
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mealId
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/menus/{mealId}/review:
+    post:
+      operationId: reviewPrivateMenu
+      summary: review Private Menu
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: mealId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuReviewInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/zones:
+    post:
+      operationId: createTestZone
+      summary: create Test Zone
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestZoneInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/slots/{id}:
+    put:
+      operationId: updateTestSlot
+      summary: update Test Slot
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestSlotUpdate"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/promotions:
+    put:
+      operationId: saveTestPromotion
+      summary: save Test Promotion
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestPromotionInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/customers:
+    get:
+      operationId: getAdminCustomers
+      summary: get Admin Customers
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminCustomer"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/customers/{id}:
+    put:
+      operationId: updateCustomerAccess
+      summary: update Customer Access
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerAccessUpdate"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/customers/{id}/role:
+    put:
+      operationId: changeApplicationRole
+      summary: change Application Role
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoleGrantInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/compensation:
+    put:
+      operationId: saveTestCompensation
+      summary: save Test Compensation
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PartnerCompensationInput"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/payables:
+    get:
+      operationId: getTestPayables
+      summary: get Test Payables
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestPayable"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/payables/{id}/settle-test:
+    post:
+      operationId: recordTestSettlement
+      summary: record Test Settlement
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/leads:
+    get:
+      operationId: getLaunchInquiries
+      summary: get Launch Inquiries
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LaunchInquiry"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/leads/{id}:
+    put:
+      operationId: updateLaunchInquiry
+      summary: update Launch Inquiry
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaunchInquiryUpdate"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/subscriptions:
+    get:
+      operationId: getTestSubscriptions
+      summary: get Test Subscriptions
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TestSubscription"
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createTestSubscription
+      summary: create Test Subscription
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestSubscriptionInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/subscriptions/{id}/pay:
+    post:
+      operationId: resumeTestSubscriptionCheckout
+      summary: resume Test Subscription Checkout
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/subscriptions/{id}/action:
+    post:
+      operationId: changeTestSubscription
+      summary: change Test Subscription
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionAction"
+      responses:
+        "204":
+          description: Saved
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /launch-inquiries:
+    post:
+      operationId: submitLaunchInquiry
+      summary: submit Launch Inquiry
+      tags:
+        - Inquiries
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LaunchInquiryInput"
+      responses:
+        "201":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /payments/webhook:
+    post:
+      operationId: receiveStripeTestWebhook
+      security: []
+      parameters:
+        - in: header
+          name: stripe-signature
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StripeTestWebhookEnvelope"
+      responses:
+        "200":
+          description: Verified test event received
+        "400":
+          description: Invalid signature or live event rejected
+        "503":
+          description: Test webhook not configured
+  /market/plan-boxes:
+    get:
+      operationId: getWeeklyBoxWorkspace
+      summary: get Weekly Box Workspace
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: saveWeeklyTestBox
+      summary: save Weekly Test Box
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubscriptionBoxInput"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/billing-attention:
+    get:
+      operationId: getBillingExceptions
+      summary: get Billing Exceptions
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /market/billing-attention/{invoice}/retry:
+    post:
+      operationId: retryVerifiedFulfillment
+      summary: retry Verified Fulfillment
+      tags:
+        - Test operations
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: invoice
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema: *a1
+        "400":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Request could not be completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -683,7 +3902,8 @@ components:
       properties:
         error:
           type: string
-      required: [error]
+      required:
+        - error
     Meal:
       type: object
       properties:
@@ -718,13 +3938,18 @@ components:
             type: string
         dietaryStatus:
           type: string
-          enum: [unverified, verified]
+          enum:
+            - unverified
+            - verified
         allergenStatus:
           type: string
-          enum: [unverified]
+          enum:
+            - unverified
+            - verified
         nutritionStatus:
           type: string
-          enum: [unverified]
+          enum:
+            - unverified
         portion:
           type: string
         storage:
@@ -735,6 +3960,14 @@ components:
           type: boolean
         demoOnly:
           type: boolean
+        crossContactAllergens:
+          type: array
+          items:
+            type: string
+        crossContactKnown:
+          type: boolean
+        crossContact:
+          type: string
       required:
         - id
         - name
@@ -760,7 +3993,8 @@ components:
       properties:
         mode:
           type: string
-          enum: [demo]
+          enum:
+            - demo
         plannedAreas:
           type: array
           items:
@@ -855,7 +4089,11 @@ components:
           maxItems: 4
           items:
             type: string
-            enum: [Breakfast, Lunch, Dinner, Soup or light meal]
+            enum:
+              - Breakfast
+              - Lunch
+              - Dinner
+              - Soup or light meal
         mealsPerWeek:
           type: string
           enum:
@@ -884,7 +4122,10 @@ components:
           type: array
           items:
             type: string
-      required: [mealId, score, reasons]
+      required:
+        - mealId
+        - score
+        - reasons
     RecommendationResponse:
       type: object
       properties:
@@ -896,7 +4137,10 @@ components:
           type: string
         preferenceSummary:
           type: string
-      required: [recommendations, allergenNotice, preferenceSummary]
+      required:
+        - recommendations
+        - allergenNotice
+        - preferenceSummary
     DemoCheckoutItemInput:
       type: object
       properties:
@@ -906,7 +4150,9 @@ components:
           type: integer
           minimum: 1
           maximum: 20
-      required: [mealId, quantity]
+      required:
+        - mealId
+        - quantity
     DemoCheckoutInput:
       type: object
       properties:
@@ -917,8 +4163,11 @@ components:
             $ref: "#/components/schemas/DemoCheckoutItemInput"
         acknowledgedDemoOnly:
           type: boolean
-          enum: [true]
-      required: [items, acknowledgedDemoOnly]
+          enum:
+            - true
+      required:
+        - items
+        - acknowledgedDemoOnly
     DemoCheckoutLine:
       type: object
       properties:
@@ -932,7 +4181,12 @@ components:
           type: integer
         lineTotalCents:
           type: integer
-      required: [mealId, name, quantity, unitPriceCents, lineTotalCents]
+      required:
+        - mealId
+        - name
+        - quantity
+        - unitPriceCents
+        - lineTotalCents
     DemoCheckoutSimulation:
       type: object
       properties:
@@ -943,10 +4197,12 @@ components:
           format: date-time
         status:
           type: string
-          enum: [simulated]
+          enum:
+            - simulated
         paymentStatus:
           type: string
-          enum: [not_charged]
+          enum:
+            - not_charged
         itemCount:
           type: integer
         subtotalCents:
@@ -966,8 +4222,6 @@ components:
         - subtotalCents
         - items
         - message
-
-
     ApplicationRole:
       type: string
       enum:
@@ -1140,9 +4394,9 @@ components:
         roles:
           type: array
           items:
-            $ref: '#/components/schemas/ApplicationRole'
+            $ref: "#/components/schemas/ApplicationRole"
         preferences:
-          $ref: '#/components/schemas/RecommendationInput'
+          $ref: "#/components/schemas/RecommendationInput"
         cart:
           type: object
           additionalProperties:
@@ -1156,7 +4410,7 @@ components:
         addresses:
           type: array
           items:
-            $ref: '#/components/schemas/SavedCustomerAddress'
+            $ref: "#/components/schemas/SavedCustomerAddress"
       required:
         - id
         - email
@@ -1167,3 +4421,1585 @@ components:
         - cart
         - favorites
         - addresses
+    MarketCheckoutInput:
+      type: object
+      properties:
+        addressId:
+          type: string
+          format: uuid
+        slotId:
+          type: string
+          format: uuid
+        mode:
+          type: string
+          enum:
+            - simulation
+            - stripe_test
+        requestKey:
+          type: string
+          format: uuid
+        promoCode:
+          type: string
+          maxLength: 30
+        acknowledgedTestOnly:
+          type: boolean
+          enum:
+            - true
+      required:
+        - addressId
+        - slotId
+        - mode
+        - requestKey
+        - acknowledgedTestOnly
+      additionalProperties: false
+    OrderTransitionInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - awaiting_payment
+            - placed
+            - confirmed
+            - preparing
+            - ready
+            - out_for_delivery
+            - delivered
+            - canceled
+            - payment_failed
+            - refunded
+        note:
+          type: string
+          minLength: 1
+          maxLength: 500
+      required:
+        - status
+        - note
+      additionalProperties: false
+    SupportTicketInput:
+      type: object
+      properties:
+        subject:
+          type: string
+          minLength: 3
+          maxLength: 160
+        category:
+          type: string
+          enum:
+            - general
+            - order
+            - refund
+            - food_safety
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        orderId:
+          type: string
+          format: uuid
+      required:
+        - subject
+        - category
+        - body
+      additionalProperties: false
+    SupportMessageInput:
+      type: object
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 4000
+        internal:
+          type: boolean
+          default: false
+      required:
+        - body
+      additionalProperties: false
+    SupportTicketUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - open
+            - in_progress
+            - resolved
+        assignToMe:
+          type: boolean
+          default: false
+      required:
+        - status
+      additionalProperties: false
+    PartnerInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+      required:
+        - name
+      additionalProperties: false
+    PartnerReview:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - prospective
+            - review
+            - approved
+            - suspended
+        agreementConfirmed:
+          type: boolean
+      required:
+        - status
+        - agreementConfirmed
+      additionalProperties: false
+    KitchenInput:
+      type: object
+      properties:
+        partnerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+      required:
+        - partnerId
+        - name
+      additionalProperties: false
+    KitchenMemberInput:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        kitchenId:
+          type: string
+          format: uuid
+      required:
+        - userId
+        - kitchenId
+      additionalProperties: false
+    MenuDraftInput:
+      type: object
+      properties:
+        kitchenId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        priceCents:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        stock:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        ingredients:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          minItems: 1
+          maxItems: 80
+        allergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+        crossContactAllergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+          default: &a2 []
+        crossContact:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        dietaryTags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 60
+          maxItems: 20
+        evidence:
+          type: string
+          maxLength: 2000
+      required:
+        - kitchenId
+        - name
+        - description
+        - priceCents
+        - stock
+        - ingredients
+        - allergens
+        - crossContact
+        - dietaryTags
+        - evidence
+      additionalProperties: false
+    MenuUpdateInput:
+      type: object
+      properties:
+        kitchenId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        priceCents:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        stock:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        ingredients:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          minItems: 1
+          maxItems: 80
+        allergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+        crossContactAllergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+          default: *a2
+        crossContact:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        dietaryTags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 60
+          maxItems: 20
+        evidence:
+          type: string
+          maxLength: 2000
+        version:
+          type: integer
+          exclusiveMinimum: true
+          minimum: 0
+      required:
+        - kitchenId
+        - name
+        - description
+        - priceCents
+        - stock
+        - ingredients
+        - allergens
+        - crossContact
+        - dietaryTags
+        - evidence
+        - version
+      additionalProperties: false
+    MenuReviewInput:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - approved
+            - hidden
+        allergenVerified:
+          type: boolean
+        dietaryVerified:
+          type: boolean
+        version:
+          type: integer
+          exclusiveMinimum: true
+          minimum: 0
+      required:
+        - status
+        - allergenVerified
+        - dietaryVerified
+        - version
+      additionalProperties: false
+    TestZoneInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        postalCodes:
+          type: array
+          items:
+            type: string
+            pattern: ^\d{5}$
+          minItems: 1
+          maxItems: 100
+        enabled:
+          type: boolean
+        testOnly:
+          type: boolean
+          enum:
+            - true
+      required:
+        - name
+        - postalCodes
+        - enabled
+        - testOnly
+      additionalProperties: false
+    TestSlotInput:
+      type: object
+      properties:
+        kitchenId:
+          type: string
+          format: uuid
+        zoneId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        cutoffAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 10000
+        enabled:
+          type: boolean
+      required:
+        - kitchenId
+        - zoneId
+        - startsAt
+        - endsAt
+        - cutoffAt
+        - capacity
+        - enabled
+      additionalProperties: false
+    TestSlotUpdate:
+      type: object
+      properties:
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 10000
+        enabled:
+          type: boolean
+      required:
+        - capacity
+        - enabled
+      additionalProperties: false
+    TestPromotionInput:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: ^[A-Z0-9-]{3,30}$
+        percent:
+          type: integer
+          minimum: 1
+          maximum: 50
+        maxUses:
+          type: integer
+          minimum: 1
+          maximum: 100000
+        expiresAt:
+          type: string
+          format: date-time
+        enabled:
+          type: boolean
+      required:
+        - code
+        - percent
+        - maxUses
+        - expiresAt
+        - enabled
+      additionalProperties: false
+    TestSubscriptionInput:
+      type: object
+      properties:
+        mealCount:
+          anyOf:
+            - type: number
+              enum:
+                - 5
+            - type: number
+              enum:
+                - 10
+            - type: number
+              enum:
+                - 15
+        acknowledgedRecurringTestBilling:
+          type: boolean
+          enum:
+            - true
+      required:
+        - mealCount
+        - acknowledgedRecurringTestBilling
+      additionalProperties: false
+    SubscriptionAction:
+      type: object
+      properties:
+        action:
+          type: string
+          enum:
+            - pause
+            - resume
+            - skip
+            - cancel
+      required:
+        - action
+      additionalProperties: false
+    CustomerAccessUpdate:
+      type: object
+      properties:
+        disabled:
+          type: boolean
+      required:
+        - disabled
+      additionalProperties: false
+    RoleGrantInput:
+      type: object
+      properties:
+        role:
+          type: string
+          enum:
+            - customer
+            - restaurant_employee
+            - restaurant_manager
+            - support_agent
+            - operations_admin
+            - founder_admin
+        enabled:
+          type: boolean
+      required:
+        - role
+        - enabled
+      additionalProperties: false
+    PartnerCompensationInput:
+      type: object
+      properties:
+        kitchenId:
+          type: string
+          format: uuid
+        perMealCents:
+          type: integer
+          minimum: 0
+          maximum: 100000
+        reference:
+          type: string
+          minLength: 3
+          maxLength: 500
+      required:
+        - kitchenId
+        - perMealCents
+        - reference
+      additionalProperties: false
+    LaunchInquiryInput:
+      type: object
+      properties:
+        kind:
+          type: string
+          enum:
+            - waitlist
+            - partner
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        postalCode:
+          type: string
+          pattern: ^\d{5}$
+        message:
+          type: string
+          maxLength: 2000
+          default: ""
+        consent:
+          type: boolean
+          enum:
+            - true
+      required:
+        - kind
+        - name
+        - email
+        - postalCode
+        - consent
+      additionalProperties: false
+    LaunchInquiryUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - received
+            - review
+            - closed
+      required:
+        - status
+      additionalProperties: false
+    TestOrder:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kitchenId:
+          type: string
+          format: uuid
+        mode:
+          type: string
+          enum:
+            - simulation
+            - stripe_test
+        status:
+          type: string
+          enum:
+            - awaiting_payment
+            - placed
+            - confirmed
+            - preparing
+            - ready
+            - out_for_delivery
+            - delivered
+            - canceled
+            - payment_failed
+            - refunded
+        paymentStatus:
+          type: string
+        subtotalCents:
+          type: integer
+        discountCents:
+          type: integer
+        totalCents:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              mealId:
+                type: string
+              name:
+                type: string
+              quantity:
+                type: integer
+              unitPriceCents:
+                type: integer
+              foodSnapshot:
+                type: object
+                additionalProperties: {}
+            required:
+              - mealId
+              - name
+              - quantity
+              - unitPriceCents
+            additionalProperties: false
+        events:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              status:
+                type: string
+              note:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+            required:
+              - id
+              - status
+              - note
+              - createdAt
+            additionalProperties: false
+        slot:
+          type: object
+          properties:
+            startsAt:
+              type: string
+              format: date-time
+            endsAt:
+              type: string
+              format: date-time
+          required:
+            - startsAt
+            - endsAt
+          additionalProperties: false
+      required:
+        - id
+        - kitchenId
+        - mode
+        - status
+        - paymentStatus
+        - subtotalCents
+        - discountCents
+        - totalCents
+        - createdAt
+        - items
+        - events
+        - slot
+      additionalProperties: false
+    SupportTicket:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        subject:
+          type: string
+        category:
+          type: string
+        status:
+          type: string
+        orderId:
+          type: string
+          format: uuid
+          nullable: true
+        assignedAgentId:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              body:
+                type: string
+              internal:
+                type: boolean
+              authorId:
+                type: string
+                format: uuid
+              createdAt:
+                type: string
+                format: date-time
+            required:
+              - id
+              - body
+              - internal
+              - authorId
+              - createdAt
+            additionalProperties: false
+      required:
+        - id
+        - subject
+        - category
+        - status
+        - orderId
+        - assignedAgentId
+        - createdAt
+        - messages
+      additionalProperties: true
+    TestCatalogMeal:
+      type: object
+      properties:
+        kitchenId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 2
+          maxLength: 120
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1000
+        priceCents:
+          type: integer
+          minimum: 100
+          maximum: 100000
+        stock:
+          type: integer
+          minimum: 0
+          maximum: 10000
+        ingredients:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 100
+          minItems: 1
+          maxItems: 80
+        allergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+        crossContactAllergens:
+          type: array
+          items:
+            type: string
+            enum:
+              - Milk
+              - Egg
+              - Fish
+              - Crustacean shellfish
+              - Tree nuts
+              - Peanuts
+              - Wheat
+              - Soy
+              - Sesame
+          maxItems: 9
+          default: *a2
+        crossContact:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        dietaryTags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 60
+          maxItems: 20
+        evidence:
+          type: string
+          maxLength: 2000
+        id:
+          type: string
+        status:
+          type: string
+        version:
+          type: integer
+        allergenVerified:
+          type: boolean
+        dietaryVerified:
+          type: boolean
+      required:
+        - kitchenId
+        - name
+        - description
+        - priceCents
+        - stock
+        - ingredients
+        - allergens
+        - crossContact
+        - dietaryTags
+        - evidence
+        - id
+        - status
+        - version
+        - allergenVerified
+        - dietaryVerified
+      additionalProperties: false
+    TestDeliverySlot:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kitchenId:
+          type: string
+          format: uuid
+        zoneId:
+          type: string
+          format: uuid
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        cutoffAt:
+          type: string
+          format: date-time
+        capacity:
+          type: integer
+        reserved:
+          type: integer
+        postalCodes:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - kitchenId
+        - zoneId
+        - startsAt
+        - endsAt
+        - cutoffAt
+        - capacity
+        - reserved
+        - postalCodes
+      additionalProperties: false
+    TestSubscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        mealCount:
+          type: integer
+        weeklyPriceCents:
+          type: integer
+        status:
+          type: string
+        nextBillingAt:
+          type: string
+          format: date-time
+          nullable: true
+        skippedUntil:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - mealCount
+        - weeklyPriceCents
+        - status
+        - nextBillingAt
+        - skippedUntil
+      additionalProperties: true
+    AccountNotification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        body:
+          type: string
+        href:
+          type: string
+        readAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - href
+        - readAt
+        - createdAt
+      additionalProperties: false
+    AdminCustomer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          nullable: true
+        displayName:
+          type: string
+          nullable: true
+        disabledAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        roles:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - email
+        - displayName
+        - disabledAt
+        - createdAt
+        - roles
+      additionalProperties: false
+    TestPayable:
+      type: object
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        kitchenId:
+          type: string
+          format: uuid
+        amountCents:
+          type: integer
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - orderId
+        - kitchenId
+        - amountCents
+        - status
+        - createdAt
+      additionalProperties: false
+    LaunchInquiry:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        kind:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        postalCode:
+          type: string
+        message:
+          type: string
+        consent:
+          type: boolean
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - kind
+        - name
+        - email
+        - postalCode
+        - message
+        - consent
+        - status
+        - createdAt
+      additionalProperties: false
+    RestaurantProspect:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        status:
+          type: string
+        testOnly:
+          type: boolean
+        agreementConfirmed:
+          type: boolean
+      required:
+        - id
+        - name
+        - status
+        - testOnly
+        - agreementConfirmed
+      additionalProperties: true
+    PartnerKitchen:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        partnerId:
+          type: string
+          format: uuid
+        name:
+          type: string
+      required:
+        - id
+        - partnerId
+        - name
+      additionalProperties: true
+    StaffPortal:
+      type: object
+      properties:
+        orders:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              kitchenId:
+                type: string
+                format: uuid
+              mode:
+                type: string
+                enum:
+                  - simulation
+                  - stripe_test
+              status:
+                type: string
+                enum:
+                  - awaiting_payment
+                  - placed
+                  - confirmed
+                  - preparing
+                  - ready
+                  - out_for_delivery
+                  - delivered
+                  - canceled
+                  - payment_failed
+                  - refunded
+              paymentStatus:
+                type: string
+              subtotalCents:
+                type: integer
+              discountCents:
+                type: integer
+              totalCents:
+                type: integer
+              createdAt:
+                type: string
+                format: date-time
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    mealId:
+                      type: string
+                    name:
+                      type: string
+                    quantity:
+                      type: integer
+                    unitPriceCents:
+                      type: integer
+                    foodSnapshot:
+                      type: object
+                      additionalProperties: {}
+                  required:
+                    - mealId
+                    - name
+                    - quantity
+                    - unitPriceCents
+                  additionalProperties: false
+              events:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    status:
+                      type: string
+                    note:
+                      type: string
+                    createdAt:
+                      type: string
+                      format: date-time
+                  required:
+                    - id
+                    - status
+                    - note
+                    - createdAt
+                  additionalProperties: false
+              slot:
+                type: object
+                properties:
+                  startsAt:
+                    type: string
+                    format: date-time
+                  endsAt:
+                    type: string
+                    format: date-time
+                required:
+                  - startsAt
+                  - endsAt
+                additionalProperties: false
+            required:
+              - id
+              - kitchenId
+              - mode
+              - status
+              - paymentStatus
+              - subtotalCents
+              - discountCents
+              - totalCents
+              - createdAt
+              - items
+              - events
+              - slot
+            additionalProperties: false
+        tickets:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              subject:
+                type: string
+              category:
+                type: string
+              status:
+                type: string
+              orderId:
+                type: string
+                format: uuid
+                nullable: true
+              assignedAgentId:
+                type: string
+                format: uuid
+                nullable: true
+              createdAt:
+                type: string
+                format: date-time
+              messages:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    body:
+                      type: string
+                    internal:
+                      type: boolean
+                    authorId:
+                      type: string
+                      format: uuid
+                    createdAt:
+                      type: string
+                      format: date-time
+                  required:
+                    - id
+                    - body
+                    - internal
+                    - authorId
+                    - createdAt
+                  additionalProperties: false
+            required:
+              - id
+              - subject
+              - category
+              - status
+              - orderId
+              - assignedAgentId
+              - createdAt
+              - messages
+            additionalProperties: true
+        partners:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              name:
+                type: string
+              status:
+                type: string
+              testOnly:
+                type: boolean
+              agreementConfirmed:
+                type: boolean
+            required:
+              - id
+              - name
+              - status
+              - testOnly
+              - agreementConfirmed
+            additionalProperties: true
+        kitchens:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              partnerId:
+                type: string
+                format: uuid
+              name:
+                type: string
+            required:
+              - id
+              - partnerId
+              - name
+            additionalProperties: true
+        menus:
+          type: array
+          items:
+            type: object
+            properties:
+              kitchenId:
+                type: string
+                format: uuid
+              name:
+                type: string
+                minLength: 2
+                maxLength: 120
+              description:
+                type: string
+                minLength: 3
+                maxLength: 1000
+              priceCents:
+                type: integer
+                minimum: 100
+                maximum: 100000
+              stock:
+                type: integer
+                minimum: 0
+                maximum: 10000
+              ingredients:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                minItems: 1
+                maxItems: 80
+              allergens:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - Milk
+                    - Egg
+                    - Fish
+                    - Crustacean shellfish
+                    - Tree nuts
+                    - Peanuts
+                    - Wheat
+                    - Soy
+                    - Sesame
+                maxItems: 9
+              crossContactAllergens:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - Milk
+                    - Egg
+                    - Fish
+                    - Crustacean shellfish
+                    - Tree nuts
+                    - Peanuts
+                    - Wheat
+                    - Soy
+                    - Sesame
+                maxItems: 9
+                default: *a2
+              crossContact:
+                type: string
+                minLength: 1
+                maxLength: 1000
+              dietaryTags:
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+                  maxLength: 60
+                maxItems: 20
+              evidence:
+                type: string
+                maxLength: 2000
+              id:
+                type: string
+              status:
+                type: string
+              version:
+                type: integer
+              allergenVerified:
+                type: boolean
+              dietaryVerified:
+                type: boolean
+            required:
+              - kitchenId
+              - name
+              - description
+              - priceCents
+              - stock
+              - ingredients
+              - allergens
+              - crossContact
+              - dietaryTags
+              - evidence
+              - id
+              - status
+              - version
+              - allergenVerified
+              - dietaryVerified
+            additionalProperties: false
+        zones:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                minLength: 2
+                maxLength: 120
+              postalCodes:
+                type: array
+                items:
+                  type: string
+                  pattern: ^\d{5}$
+                minItems: 1
+                maxItems: 100
+              enabled:
+                type: boolean
+              testOnly:
+                type: boolean
+              id:
+                type: string
+                format: uuid
+            required:
+              - name
+              - postalCodes
+              - enabled
+              - testOnly
+              - id
+            additionalProperties: false
+        slots:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              kitchenId:
+                type: string
+                format: uuid
+              zoneId:
+                type: string
+                format: uuid
+              startsAt:
+                type: string
+                format: date-time
+              endsAt:
+                type: string
+                format: date-time
+              cutoffAt:
+                type: string
+                format: date-time
+              capacity:
+                type: integer
+              reserved:
+                type: integer
+              enabled:
+                type: boolean
+            required:
+              - id
+              - kitchenId
+              - zoneId
+              - startsAt
+              - endsAt
+              - cutoffAt
+              - capacity
+              - reserved
+              - enabled
+            additionalProperties: false
+        promotions:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                pattern: ^[A-Z0-9-]{3,30}$
+              percent:
+                type: integer
+                minimum: 1
+                maximum: 50
+              maxUses:
+                type: integer
+                minimum: 1
+                maximum: 100000
+              expiresAt:
+                type: string
+                format: date-time
+              enabled:
+                type: boolean
+              uses:
+                type: integer
+            required:
+              - code
+              - percent
+              - maxUses
+              - expiresAt
+              - enabled
+              - uses
+            additionalProperties: false
+        audit:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              action:
+                type: string
+              entityId:
+                type: string
+              createdAt:
+                type: string
+                format: date-time
+            required:
+              - id
+              - action
+              - entityId
+              - createdAt
+            additionalProperties: false
+        metrics:
+          type: object
+          properties:
+            testOrders:
+              type: integer
+            paidTestSalesCents:
+              type: integer
+            refundedTestOrders:
+              type: integer
+            openTickets:
+              type: integer
+          required:
+            - testOrders
+            - paidTestSalesCents
+            - refundedTestOrders
+            - openTickets
+          additionalProperties: false
+      required:
+        - orders
+        - tickets
+        - partners
+        - kitchens
+        - menus
+        - zones
+        - slots
+        - promotions
+        - audit
+        - metrics
+      additionalProperties: false
+    StripeTestWebhookEnvelope: *a1
+    SubscriptionBoxInput:
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          format: uuid
+        addressId:
+          type: string
+          format: uuid
+        slotId:
+          type: string
+          format: uuid
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              mealId:
+                type: string
+                pattern: ^[a-z0-9-]+$
+                maxLength: 100
+              quantity:
+                type: integer
+                minimum: 1
+                maximum: 20
+            required:
+              - mealId
+              - quantity
+            additionalProperties: false
+          minItems: 1
+          maxItems: 50
+      required:
+        - subscriptionId
+        - addressId
+        - slotId
+        - items
+      additionalProperties: false

@@ -1,3 +1,4 @@
+import { AuthFailure } from "./auth";
 import { and, eq } from "drizzle-orm";
 import type { db as database } from "@workspace/db";
 import {
@@ -43,6 +44,11 @@ export function createAccountStore(db: typeof database) {
             set: { email: identity.email, updatedAt: new Date() },
           })
           .returning();
+        if (user.disabledAt)
+          throw new AuthFailure(
+            403,
+            "This account is disabled. Contact support.",
+          );
         await tx
           .insert(customerProfiles)
           .values({ userId: user.id })
