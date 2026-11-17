@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler } from "express";
 import express, { type Express } from "express";
+import path from "node:path";
 import pinoHttp from "pino-http";
 import { createPublicRouter } from "./routes";
 import { resolvePublicMeals } from "./lib/public-catalog";
@@ -19,6 +20,7 @@ import { requestPolicy, rateLimit } from "./lib/security";
 export function createApp(
   options: OperationsOptions & {
     origins?: string[];
+    publicDir?: string;
   } = {},
 ): Express {
   const app: Express = express();
@@ -81,6 +83,38 @@ export function createApp(
     "/api",
     createPublicRouter(() => resolvePublicMeals(options.operations)),
   );
+
+  // API misses must never become a successful HTML SPA response.
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "API route not found." });
+  });
+  if (options.publicDir) {
+    const root = path.resolve(options.publicDir);
+    app.use(
+      express.static(root, {
+        index: false,
+        dotfiles: "deny",
+        setHeaders(res, file) {
+          res.setHeader(
+            "Cache-Control",
+            file.includes(`${path.sep}assets${path.sep}`)
+              ? "public, max-age=31536000, immutable"
+              : "no-cache",
+          );
+        },
+      }),
+    );
+    app.get("/{*route}", (req, res, next) => {
+      if (
+        path.extname(req.path) ||
+        req.path.split("/").some((part) => part.startsWith(".")) ||
+        !req.accepts("html")
+      )
+        return next();
+      res.setHeader("Cache-Control", "no-cache");
+      res.sendFile(path.join(root, "index.html"));
+    });
+  }
 
   const requestErrorHandler: ErrorRequestHandler = (error, _req, res, next) => {
     if (error?.type === "entity.parse.failed") {

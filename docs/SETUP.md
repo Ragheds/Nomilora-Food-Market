@@ -14,7 +14,7 @@ Passwords go to Supabase, never the Express API, application database, source co
 
 ## Existing application PostgreSQL
 
-On November 16 a read-only query in the existing Replit shell confirmed eight public account tables and no Drizzle migration-journal table: `app_users`, `customer_addresses`, `customer_preferences`, `customer_profiles`, `saved_meals`, `shopping_cart_items`, `shopping_carts`, `user_roles`. This confirms a baseline review is necessary; it does **not** prove their columns/constraints exactly match migration 0000. No hosted schema or customer data was changed.
+On November 16 a read-only query in the existing Replit shell confirmed eight public account tables and no Drizzle migration-journal table: `app_users`, `customer_addresses`, `customer_preferences`, `customer_profiles`, `saved_meals`, `shopping_cart_items`, `shopping_carts`, `user_roles`. The subsequent read-only full comparison matched migration 0000 exactly, including columns/constraints/indexes/enum labels/row security/triggers; all eight tables were empty. No hosted schema or customer data was changed at this checkpoint.
 
 For a **new disposable empty database**, set `DATABASE_URL`, run `pnpm --filter @workspace/db migrate`, then `pnpm seed:test`. Migrations 0000–0005 create the account and operations tables. The seed creates a fictional test kitchen, illustrative meals and one test window tomorrow; it does not list Olia Greens, reset used stock or create an administrator.
 
@@ -37,3 +37,9 @@ Add only `sk_test_…` as `STRIPE_TEST_SECRET_KEY`, the **test endpoint's** `whs
 Send test webhooks to `/api/payments/webhook` using the official Stripe CLI forwarding to local port 8080 or an explicitly authorized private endpoint. Subscribe to `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `charge.refunded`, `customer.subscription.updated`, `customer.subscription.deleted`, and `invoice.paid`. Use the forwarding endpoint's signing secret locally. No public endpoint was created automatically.
 
 Use Stripe test payment details only. Verify completed/expired sessions, wrong signatures, duplicate delivery, full test refunds, pause/resume/skip/cancel and invoice-to-box fulfillment. Redirect success alone never marks an order paid. The weekly $15/meal price is illustrative. Taxes, delivery fees, real payout transfers, prorations, partial refunds and production billing policy are not approved or enabled. Paid box failures remain visible for support; do not create a new charge to retry fulfillment.
+
+## Serve a built private app
+
+After `pnpm build`, run `PORT=8080 pnpm start`. Express serves the built frontend and API together, including SPA deep links. Missing API paths remain JSON 404 responses; missing assets are not replaced with HTML. Fingerprinted assets are immutable, while the HTML and service worker revalidate. Point your browser to localhost:8080 and add its exact `/account` callback before testing auth there. This starts a server; it does not deploy or publish anything.
+
+For the existing Replit shell, its package-manager shim may be broken even when the workspace opens. `npx --yes pnpm@11.25.0 install --frozen-lockfile` successfully uses the same pinned version without a paid upgrade. The original workspace is preserved; the review checkout is in `/tmp/nomilora-review-ba4c0b4`.

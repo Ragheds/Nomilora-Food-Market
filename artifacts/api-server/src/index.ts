@@ -1,4 +1,11 @@
-import app from "./app";
+import { createApp } from "./app";
+import { fileURLToPath } from "node:url";
+const app = createApp({
+  publicDir:
+    process.env.NODE_ENV === "production"
+      ? fileURLToPath(new URL("../../nomilora/dist/public/", import.meta.url))
+      : undefined,
+});
 import { logger } from "./lib/logger";
 
 const rawPort = process.env["PORT"];

@@ -1,3 +1,7 @@
+import { spawnSync } from "node:child_process";
+import { readFile, mkdtemp, chmod, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -11,7 +15,7 @@ import { createOperationsStore } from "../src/lib/operations-store";
 // Opt-in only: refuses hosted databases and existing application schemas.
 test(
   "PostgreSQL driver serializes competing checkouts without overselling",
-  { skip: !process.env.TEST_DATABASE_URL, timeout: 30000 },
+  { skip: !process.env.TEST_DATABASE_URL, timeout: 60000 },
   async () => {
     const url = new URL(process.env.TEST_DATABASE_URL!);
     assert.ok(
@@ -33,6 +37,63 @@ test(
       const migrationsFolder = fileURLToPath(
         new URL("../../../lib/db/migrations", import.meta.url),
       );
+      // Reproduce the original Replit schema with no journal, then test guarded adoption.
+      await db.execute(
+        sql.raw(
+          await readFile(
+            path.join(migrationsFolder, "0000_tidy_edwin_jarvis.sql"),
+            "utf8",
+          ),
+        ),
+      );
+      const inspector = fileURLToPath(
+        new URL("../src/inspect-database.ts", import.meta.url),
+      );
+      const runInspect = (
+        args: string[] = [],
+        extra: Record<string, string> = {},
+      ) =>
+        spawnSync(process.execPath, ["--import", "tsx", inspector, ...args], {
+          encoding: "utf8",
+          env: { ...process.env, ...extra },
+          timeout: 15000,
+        });
+      const preflight = runInspect();
+      assert.equal(preflight.status, 0, preflight.stderr);
+      const report = JSON.parse(preflight.stdout);
+      assert.equal(report.exactSchemaMatch, true);
+      assert.equal(report.migrationJournalPresent, false);
+      const directory = await mkdtemp(
+        path.join(tmpdir(), "nomilora-baseline-"),
+      );
+      try {
+        const backup = path.join(directory, "before.dump");
+        const dump = spawnSync(
+          "pg_dump",
+          ["--format=custom", "--file", backup],
+          {
+            encoding: "utf8",
+            env: { ...process.env, PGDATABASE: url.toString() },
+            timeout: 10000,
+          },
+        );
+        assert.equal(dump.status, 0, dump.stderr);
+        await chmod(backup, 0o600);
+        const vars = {
+          CONFIRM_EMPTY_BASELINE: "yes",
+          NOMILORA_DATABASE_BACKUP: backup,
+          NOMILORA_REVIEWED_BASELINE_FINGERPRINT: "wrong",
+        };
+        assert.notEqual(runInspect(["--adopt-empty-baseline"], vars).status, 0);
+        const adopted = runInspect(["--adopt-empty-baseline"], {
+          ...vars,
+          NOMILORA_REVIEWED_BASELINE_FINGERPRINT: report.actualFingerprint,
+        });
+        assert.equal(adopted.status, 0, adopted.stderr);
+        assert.match(adopted.stdout, /baseline 0000 adopted/);
+      } finally {
+        await rm(directory, { recursive: true, force: true });
+      }
       await migrate(db, { migrationsFolder });
       await migrate(db, { migrationsFolder });
       const accounts = createAccountStore(db),

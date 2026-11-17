@@ -1,9 +1,11 @@
 /** Read-only preflight for the original Drizzle-push schema; never establishes a guessed journal. */
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import { PGlite } from "@electric-sql/pglite";
 import { pool } from "@workspace/db";
+import { readMigrationFiles } from "drizzle-orm/migrator";
+const adopt = process.argv.includes("--adopt-empty-baseline");
 const expected = new PGlite();
 const queries = {
   tables: `select tablename, rowsecurity from pg_tables where schemaname='public' order by tablename`,
@@ -29,7 +31,40 @@ try {
   // A read-only transaction prevents accidental mutation even if this script is later extended.
   const client = await pool.connect();
   try {
-    await client.query("BEGIN READ ONLY");
+    if (adopt) {
+      if (process.env.CONFIRM_EMPTY_BASELINE !== "yes")
+        throw new Error("Explicit empty-baseline confirmation required.");
+      const backup = process.env.NOMILORA_DATABASE_BACKUP;
+      if (!backup)
+        throw new Error(
+          "A private PostgreSQL custom-format backup is required.",
+        );
+      const metadata = await stat(backup);
+      if (
+        metadata.size < 100 ||
+        (metadata.mode & 0o077) !== 0 ||
+        (await readFile(backup)).subarray(0, 5).toString() !== "PGDMP"
+      )
+        throw new Error(
+          "Backup must be nonempty, private and PostgreSQL custom format.",
+        );
+    }
+    await client.query(adopt ? "BEGIN" : "BEGIN READ ONLY");
+    if (adopt) {
+      const tables = (
+        await expected.query<{ tablename: string }>(queries.tables)
+      ).rows;
+      await client.query(
+        "LOCK TABLE " +
+          tables
+            .map(
+              ({ tablename }) =>
+                'public."' + tablename.replaceAll('"', '""') + '"',
+            )
+            .join(",") +
+          " IN ACCESS EXCLUSIVE MODE",
+      );
+    }
     for (const [name, query] of Object.entries(queries)) {
       expectedSchema[name] = (await expected.query(query)).rows;
       actualSchema[name] = (await client.query(query)).rows;
@@ -58,7 +93,7 @@ try {
     console.log(
       JSON.stringify(
         {
-          readOnly: true,
+          readOnly: !adopt,
           baseline: "0000",
           migrationJournalPresent: journal.rows[0].present,
           exactSchemaMatch: mismatches.length === 0,
@@ -77,7 +112,38 @@ try {
       );
       process.exitCode = 2;
     }
+    if (adopt) {
+      if (
+        mismatches.length ||
+        journal.rows[0].present ||
+        Object.values(counts).some((count) => count !== "0") ||
+        process.env.NOMILORA_REVIEWED_BASELINE_FINGERPRINT !==
+          hash(actualSchema)
+      )
+        throw new Error(
+          "Refusing baseline adoption: exact reviewed schema, no journal and empty tables are required.",
+        );
+      const [baseline] = readMigrationFiles({
+        migrationsFolder: fileURLToPath(
+          new URL("../../../lib/db/migrations", import.meta.url),
+        ),
+      });
+      await client.query('CREATE SCHEMA "drizzle"');
+      await client.query(
+        'CREATE TABLE "drizzle"."__drizzle_migrations" (id SERIAL PRIMARY KEY, hash text NOT NULL, created_at bigint)',
+      );
+      await client.query(
+        'INSERT INTO "drizzle"."__drizzle_migrations" (hash,created_at) VALUES ($1,$2)',
+        [baseline.hash, baseline.folderMillis],
+      );
+      await client.query("COMMIT");
+      console.log(
+        "Verified empty baseline 0000 adopted. Existing application tables were preserved.",
+      );
+    } else await client.query("ROLLBACK");
+  } catch (error) {
     await client.query("ROLLBACK");
+    throw error;
   } finally {
     client.release();
   }

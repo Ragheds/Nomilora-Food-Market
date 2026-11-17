@@ -12,7 +12,8 @@
     "test": "pnpm --filter @workspace/nomilora test && pnpm --filter @workspace/api-server test && pnpm --filter @workspace/api-server test:ui",
     "seed:test": "pnpm --filter @workspace/api-server exec node --env-file-if-exists=../../.env --import tsx src/seed-test-data.ts",
     "bootstrap:founder": "pnpm --filter @workspace/api-server exec node --env-file-if-exists=../../.env --import tsx src/bootstrap-founder.ts",
-    "db:inspect": "pnpm --filter @workspace/api-server exec node --env-file-if-exists=../../.env --import tsx src/inspect-database.ts"
+    "db:inspect": "pnpm --filter @workspace/api-server exec node --env-file-if-exists=../../.env --import tsx src/inspect-database.ts",
+    "start": "NODE_ENV=production pnpm --filter @workspace/api-server exec node --env-file-if-exists=../../.env --enable-source-maps dist/index.mjs"
   },
   "private": true,
   "dependencies": {

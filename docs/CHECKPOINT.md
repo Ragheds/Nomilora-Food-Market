@@ -9,18 +9,18 @@ This is a substantial private test platform, **not a claim that every production
 ## Verified locally
 
 - Full TypeScript check and production API/customer builds pass on macOS with Node 24/pnpm 11.25.0. Existing tooltip sourcemap and bundle-size advisories remain non-fatal. Operational screens now load as a separate chunk.
-- Seven storage/write-queue tests pass. Twenty-nine API/account/security/operations tests pass with fresh PGlite migrations, including repeated migration runs. Supabase and Stripe are mocked only inside test fixtures.
+- Seven storage/write-queue tests pass. Thirty API/account/security/operations/hosting tests pass with fresh PGlite migrations, including repeated migration runs. Supabase and Stripe are mocked only inside test fixtures.
 - One full React → Express → PostgreSQL-engine acceptance test passes: persisted basket → saved test order → linked ticket → agent private/public replies → customer sees only public replies, including switching identities.
 - Coverage includes ownership/RBAC/MFA, malformed/oversized requests, exact origins, strict verified dietary and cross-contact filtering, immutable prices/food declarations, slot/stock/promotion rollback, idempotency, order transitions, cancellation/expiry/refund release, menu versions/real-prospect privacy, assignment, compensation and inquiries.
 - Official Stripe SDK tests use a mock HTTP transport and real signature generation/verification. They cover weekly price/pause/resume/skip/cancel, signed invoice retrieval, invoice-to-box fulfillment, duplicate invoice suppression, paid stock failures and recovery without another charge. Customer shopping baskets remain intact during subscription fulfillment.
-- A production PostgreSQL-driver concurrency test and isolated PostgreSQL 16 CI service are included. Locally that opt-in test is skipped because no local PostgreSQL server is configured; check GitHub CI before treating it as passed. The guard refuses non-loopback, differently named or nonempty databases.
+- The initial GitHub CI run passed, including the production PostgreSQL-driver concurrency test against its disposable PostgreSQL 16 service. Locally that opt-in test is skipped because no local PostgreSQL server is configured. A subsequent enhancement also tests private backup and guarded empty-baseline adoption; its result must be checked after the next push. The guard refuses non-loopback, differently named or nonempty databases.
 - The six original PNG logo assets match the supplied launch-pack originals by SHA-256 comparison.
 
 ## External configuration observed
 
 The free Nomilora Supabase project exists. Its public Auth settings returned HTTP 200, with confirmation required and anonymous sign-in disabled. TOTP is enabled; local callbacks and a 12-character password minimum were saved. Only public URL/publishable-key values were written to the ignored local `.env`; no Supabase database password or secret key was accessed.
 
-A read-only query in the original Replit shell showed eight public account tables and no Drizzle journal. No hosted schema/data mutation occurred. `pnpm db:inspect` now compares the live columns, enums, constraints, indexes, row-security flags and triggers to migration 0000 inside a read-only transaction and reports fingerprints/counts without customer rows or connection strings. A baseline match, restorable private backup and reviewed journal adoption are still required before migrations.
+A read-only query in the original Replit shell showed eight public account tables and no Drizzle journal. The exact comparison subsequently passed with matching fingerprint `b7aac640c0869b86ac996f88b2268b20fa9ccab66cb9f875264a5b2ecfa1e979`; all eight table counts were zero. No hosted schema/data mutation occurred yet. `pnpm db:inspect` now compares the live columns, enums, constraints, indexes, row-security flags and triggers to migration 0000 inside a read-only transaction and reports fingerprints/counts without customer rows or connection strings. A baseline match, restorable private backup and reviewed journal adoption are still required before migrations.
 
 ## Open acceptance and launch work
 
