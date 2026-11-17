@@ -73,7 +73,14 @@ test(
           ["--format=custom", "--file", backup],
           {
             encoding: "utf8",
-            env: { ...process.env, PGDATABASE: url.toString() },
+            env: {
+              ...process.env,
+              PGHOST: url.hostname,
+              PGPORT: url.port || "5432",
+              PGUSER: decodeURIComponent(url.username),
+              PGPASSWORD: decodeURIComponent(url.password),
+              PGDATABASE: decodeURIComponent(url.pathname.slice(1)),
+            },
             timeout: 10000,
           },
         );
