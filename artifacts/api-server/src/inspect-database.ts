@@ -1,4 +1,4 @@
-/** Read-only preflight for the original Drizzle-push schema; never establishes a guessed journal. */
+/** Read-only preflight by default; guarded adoption requires a reviewed, backed-up empty baseline. */
 import { readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
@@ -28,7 +28,7 @@ try {
   await expected.exec(source);
   const expectedSchema: Record<string, unknown> = {},
     actualSchema: Record<string, unknown> = {};
-  // A read-only transaction prevents accidental mutation even if this script is later extended.
+  // Normal inspection is read-only. Explicit adoption locks and rechecks the original tables.
   const client = await pool.connect();
   try {
     if (adopt) {

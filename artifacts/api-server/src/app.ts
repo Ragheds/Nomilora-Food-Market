@@ -90,6 +90,24 @@ export function createApp(
   });
   if (options.publicDir) {
     const root = path.resolve(options.publicDir);
+    let authOrigin = "";
+    try {
+      const configured = new URL(process.env.SUPABASE_URL ?? "");
+      if (configured.protocol === "https:") authOrigin = configured.origin;
+    } catch {
+      /* Unconfigured auth remains unavailable. */
+    }
+    app.use((_req, res, next) => {
+      res.setHeader(
+        "Content-Security-Policy",
+        `default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' ${authOrigin}; worker-src 'self'; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self' https://checkout.stripe.com`,
+      );
+      res.setHeader(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=()",
+      );
+      next();
+    });
     app.use(
       express.static(root, {
         index: false,

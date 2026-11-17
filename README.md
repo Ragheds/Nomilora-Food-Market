@@ -22,7 +22,7 @@ pnpm install --frozen-lockfile
 cp .env.example .env
 # Fill .env privately. Read docs/SETUP.md before using an existing database.
 pnpm --filter @workspace/db migrate
-pnpm seed:test
+NOMILORA_SEED_TEST_DATA=yes pnpm seed:test
 pnpm dev:api
 # Another terminal:
 pnpm dev:web
@@ -42,4 +42,4 @@ Tests use isolated PGlite databases and local HTTP listeners. The React acceptan
 
 Read [setup](docs/SETUP.md), [checkpoint evidence](docs/CHECKPOINT.md) and [release operations](docs/RELEASE.md). Authentication configuration is separate from application data. A free Nomilora Supabase project exists; its public configuration is stored only in the local ignored `.env`. Do not publish secrets or run migrations blindly against the existing database.
 
-No live payments, real delivery, paid service or public deployment was enabled. Real-provider registration/recovery/MFA acceptance, existing database baseline/migration, Stripe dashboard test-event acceptance, legal/food-safety/restaurant agreements, tax and launch approval remain required. Draft policy pages are not legal sign-off. PWA device/offline and broader accessibility acceptance remain incomplete. The original archived mockup sandbox is retained but excluded from the product build.
+No live payments, real delivery, paid service or public deployment was enabled. The existing database is backed up, migrated and seeded with fictional test meals. Real-provider registration/recovery/MFA acceptance, Stripe dashboard test-event acceptance, legal/food-safety/restaurant agreements, tax and launch approval remain required. Draft policy pages are not legal sign-off. PWA device/offline and broader accessibility acceptance remain incomplete. The original archived mockup sandbox is retained but excluded from the product build.

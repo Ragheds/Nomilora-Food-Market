@@ -188,7 +188,7 @@ function FoodImage({ meal, className = '' }: { meal: Meal; className?: string })
   return <div className={`relative overflow-hidden bg-[#e6e6d9] ${className}`}>
     <div className="absolute inset-0 z-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_30%_40%,#c4c9a8_0%,#e8e5d6_70%)]"><img src="/brand/03_nomilora_symbol_transparent.png" alt="" className="w-16 opacity-20" /></div>
     {meal.photoUrl ? <img src={meal.photoUrl} alt={meal.name} className="relative z-10 h-full w-full object-cover" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
-    {meal.demoOnly && <span className="absolute left-3 top-3 rounded-full bg-[#f8f5ed]/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#31513a]">Menu preview</span>}
+    {meal.demoOnly && <span className="absolute z-20 left-3 top-3 rounded-full bg-[#f8f5ed]/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#31513a]">Menu preview</span>}
   </div>;
 }
 function MealCard({ meal }: { meal: Meal }) {
@@ -241,11 +241,11 @@ function Home() {
         <div className="relative overflow-hidden rounded-[44%_56%_46%_54%/45%_42%_58%_55%] border-[10px] border-[#f8f5ed] bg-[#dfe3d2] shadow-[0_25px_65px_rgba(37,59,40,.12)]">
           {featured[0] ? <FoodImage meal={featured[0]} className="aspect-[.92] w-full" /> : <div className="aspect-[.92] w-full bg-[radial-gradient(ellipse_at_40%_45%,#c8cda9,#e9e5d7)]" />}
         </div>
-        <div className="absolute -bottom-1 left-0 max-w-[230px] rounded-2xl border border-[#e5dfd2] bg-[#fbf9f2] p-4 shadow-[0_15px_45px_rgba(40,48,34,.1)] sm:-left-7">
+        <div className="absolute z-20 -bottom-1 left-0 max-w-[230px] rounded-2xl border border-[#e5dfd2] bg-[#fbf9f2] p-4 shadow-[0_15px_45px_rgba(40,48,34,.1)] sm:-left-7">
           <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#a85735]">A more personal menu</p>
           <p className="serif mt-1 text-xl text-[#173b27]">Made around your kind of good.</p>
         </div>
-        <div className="absolute right-0 top-4 rounded-full bg-[#173b27] px-4 py-2 text-xs font-semibold text-[#f8f5ed]">Queens, NY · coming soon</div>
+        <div className="absolute z-20 right-0 top-4 rounded-full bg-[#173b27] px-4 py-2 text-xs font-semibold text-[#f8f5ed]">Queens, NY · coming soon</div>
       </div>
     </section>
     <section className="border-y border-[#e1dccf] bg-[#efeee5]">
@@ -308,9 +308,9 @@ const HOME_CATEGORIES = [
 const HOME_FAQS = [
   ['Where will Nomilora deliver?', 'Astoria and Long Island City are planned pilot areas only. No delivery zones or dates are active, and we cannot confirm availability yet.'],
   ['Are the dishes and prices final?', 'No. Every dish, image, price, tag, ingredient, and nutrition detail is illustrative and must be confirmed with a restaurant partner before launch.'],
-  ['Can I safely use the menu with a food allergy?', 'No. All allergen declarations are unknown. Do not use this preview to make a food-safety decision; a real contact channel is not configured yet.'],
-  ['Does checkout charge me or place an order?', 'No. Checkout only validates a sample basket and shows a zero-charge simulation. No food is reserved, no delivery is scheduled, and no payment is collected.'],
-  ['Will a weekly plan renew automatically?', 'No plans or billing are active. The weekly plan screen is only a preview; nothing renews or enrolls you.'],
+  ['Can I safely use the menu with a food allergy?', 'Do not use test menu declarations as a real kitchen safety guarantee. Strict filters require reviewed ingredient and cross-contact information. You can ask questions through Help & messages; a staffed food service is not active.'],
+  ['Does checkout charge me or place an order?', 'Guest checkout is a zero-charge browser simulation. Signed-in test checkout saves test orders and reserves fictional stock. Stripe test mode uses test funds only. No real food or delivery is arranged.'],
+  ['Will a weekly plan renew automatically?', 'The public weekly-plan page never enrolls you. Signed-in Stripe test plans can simulate recurring weekly billing after explicit test checkout. Their billing controls let you pause, skip, resume or cancel. No real subscription charge is enabled.'],
 ] as const;
 
 function Explore() {

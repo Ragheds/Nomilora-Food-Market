@@ -21,6 +21,10 @@ test(
         assert.equal(response.status, 200);
         assert.match(response.headers.get("content-type") ?? "", /text\/html/);
         assert.equal(response.headers.get("cache-control"), "no-cache");
+        assert.match(
+          response.headers.get("content-security-policy") ?? "",
+          /script-src 'self'/,
+        );
       }
       const html = await (await fetch(origin)).text();
       const asset =
