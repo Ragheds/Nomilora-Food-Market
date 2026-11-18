@@ -3,4 +3,4 @@
 set -eu
 cd "$(dirname "$0")/.."
 npx --yes pnpm@11.25.0 build
-exec node scripts/private-preview.mjs
+exec node --env-file-if-exists=.env scripts/private-preview.mjs
