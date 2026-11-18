@@ -1,4 +1,5 @@
 import { createClient, type Session } from "@supabase/supabase-js";
+import { recoveryMarker } from "./recovery-state";
 import {
   createContext,
   useContext,
@@ -48,18 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((event, session) => {
       // UI-only recovery marker; Supabase still authorizes every password update.
       // No credentials or tokens are stored here, and the marker is account-scoped.
-      let rememberedRecovery = false;
-      try {
-        const marker = "nomilora.password-recovery";
-        if (!session || event === "SIGNED_OUT")
-          sessionStorage.removeItem(marker);
-        else if (event === "PASSWORD_RECOVERY")
-          sessionStorage.setItem(marker, session.user.id);
-        rememberedRecovery =
-          !!session && sessionStorage.getItem(marker) === session.user.id;
-      } catch {
-        /* Recovery still works when browser storage is unavailable. */
-      }
+      const rememberedRecovery = recoveryMarker(event, session?.user.id);
       if (active)
         setState((current) => ({
           session,
