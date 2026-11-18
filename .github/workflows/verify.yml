@@ -11,7 +11,8 @@ concurrency:
   cancel-in-progress: true
 jobs:
   application:
-    runs-on: ubuntu-latest
+    # Keep backup/restore clients aligned with the PostgreSQL 16 test service.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
       postgres:
@@ -30,6 +31,10 @@ jobs:
         with:
           node-version: '24'
       - uses: pnpm/action-setup@f53f5227a9e83886ab598c617f3c170fab62f0d3 # v6
+      - name: Select matching PostgreSQL tools
+        run: |
+          test -x /usr/lib/postgresql/16/bin/pg_dump
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test

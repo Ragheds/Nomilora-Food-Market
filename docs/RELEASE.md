@@ -31,3 +31,11 @@ Stripe webhook failures should be retried using the original event/invoice ident
 Explicit launch approval; live-mode architecture and review; real restaurant agreements and licensing/insurance; verified menu ingredients/allergens/cross-contact/nutrition and image rights; legally reviewed privacy/terms/refund and retention/deletion procedures; sales tax and billing rules; delivery staffing/coverage/cutoffs and incident/refund processes; authorized email sender; independent security/accessibility review; backups/restore exercises; monitoring, distributed rate limits and load testing appropriate to the deployment.
 
 The draft public policy pages describe current test behavior. They do not establish legal compliance, food-safety certification, allergy safety, fulfillment staffing or a public service commitment.
+
+## Recovery and portability verification
+
+The optional PostgreSQL-driver test is restricted to an initially empty loopback database named `nomilora_test`. After migration/adoption and competing checkout checks, it takes a custom-format backup containing the resulting order, items, stock, reservations and migration journal. It creates a fresh `nomilora_restore_test` database (refusing an existing destination), restores with exit-on-error, verifies the restored values and six migration entries, then removes only the database it created. This exercises the recovery mechanism on disposable data; it does not replace a restore exercise for the actual private Replit backup.
+
+GitHub also builds the portable container and runs it as an unprivileged user with a read-only filesystem. HTTP health and the account deep link must load; nonexistent API and `.env` requests must remain 404. This smoke test uses no real provider credentials and does not prove production provider configuration, database network reachability or live-commerce readiness.
+
+Use backup/restore tools matching the database major version. The restore drill exposed the November runner update from PostgreSQL 16 tools to 18 tools: its generated `transaction_timeout` setting cannot be applied to the PostgreSQL 16 service. CI therefore pins Ubuntu 24.04 and explicitly selects PostgreSQL 16 tools. Do not strip unknown statements from a backup to conceal compatibility failures.
