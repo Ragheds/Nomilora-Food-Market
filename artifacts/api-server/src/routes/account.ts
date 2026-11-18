@@ -15,9 +15,17 @@ const getStore = async () => {
   return createAccountStore((await import("@workspace/db")).db);
 };
 export function createAccountRouter(
-  options: { verify?: VerifyToken; store?: () => Promise<AccountStore> } = {},
+  options: {
+    verify?: VerifyToken;
+    store?: () => Promise<AccountStore>;
+    catalogIds?: () => Promise<string[]>;
+  } = {},
 ) {
   const router = Router();
+  const availableIds = async () => {
+    if (options.catalogIds) return options.catalogIds();
+    return nomiloraMeals.map((meal) => meal.id);
+  };
   router.use(authenticate(options.verify));
   router.use(async (_req, res, next) => {
     try {
@@ -73,10 +81,10 @@ export function createAccountRouter(
   router.put(
     "/cart",
     save(cartInput, async (store, id, data, res) => {
+      const ids = await availableIds();
       if (
         data.items.some(
-          (item: { mealId: string }) =>
-            !nomiloraMeals.some((meal) => meal.id === item.mealId),
+          (item: { mealId: string }) => !ids.includes(item.mealId),
         )
       ) {
         res
@@ -90,7 +98,7 @@ export function createAccountRouter(
   for (const method of ["put", "delete"] as const)
     router[method]("/favorites/:mealId", async (req, res) => {
       const mealId = String(req.params.mealId);
-      if (!nomiloraMeals.some((meal) => meal.id === mealId)) {
+      if (method === "put" && !(await availableIds()).includes(mealId)) {
         res.status(404).json({ error: "Meal not found." });
         return;
       }

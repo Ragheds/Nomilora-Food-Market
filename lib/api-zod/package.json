@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./account": "./src/account.ts"
+    "./account": "./src/account.ts",
+    "./operations": "./src/operations.ts"
   },
   "dependencies": {
     "zod": "catalog:"

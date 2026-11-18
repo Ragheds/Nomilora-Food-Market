@@ -1,0 +1,56 @@
+name: Verify application
+on:
+  push:
+    branches: [main, codex/phase-c, codex/test-platform]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  application:
+    # Keep backup/restore clients aligned with the PostgreSQL 16 test service.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: nomilora_test
+          POSTGRES_PASSWORD: disposable_ci_only
+          POSTGRES_DB: nomilora_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U nomilora_test -d nomilora_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@f53f5227a9e83886ab598c617f3c170fab62f0d3 # v6
+      - name: Select matching PostgreSQL tools
+        run: |
+          test -x /usr/lib/postgresql/16/bin/pg_dump
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+        env:
+          LOG_LEVEL: silent
+          TEST_DATABASE_URL: postgresql://nomilora_test:disposable_ci_only@127.0.0.1:5432/nomilora_test
+      - name: Verify portable container
+        run: |
+          docker build --tag nomilora:test .
+          docker run --detach --name nomilora-test --read-only --tmpfs /tmp --publish 18082:8080 nomilora:test
+          trap 'docker logs nomilora-test; docker rm --force nomilora-test' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18082/api/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18082/api/healthz
+          curl --fail --silent http://127.0.0.1:18082/account | grep -qi '<!doctype html>'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18082/api/not-a-route)" = 404
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18082/.env)" = 404

@@ -1,0 +1,13 @@
+.git
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+**/.env
+**/.env.*
+**/.local
+**/.cache
+**/coverage
+**/*.dump
+**/*.patch
+outputs
+.DS_Store

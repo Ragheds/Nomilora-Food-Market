@@ -1,8 +1,9 @@
+import { Inquiry, Information } from './pages/information';
 import { AuthProvider, useAuth } from './lib/auth';
 import { useCustomerAccount } from './lib/customer-account';
 import { AccountPage } from './pages/account';
 import { readStored, normalizeCart } from './lib/storage';
-import { type ReactNode, createContext, useContext, useMemo, useState, useEffect } from 'react';
+import { type ReactNode, lazy, Suspense, createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -13,6 +14,14 @@ import { useGetLaunchReadiness, useGetMeal, useGetRecommendations, useListMeals,
 import type { DemoCheckoutSimulation, LaunchReadiness, Meal, RecommendationInput, RecommendationResponse } from '@workspace/api-client-react';
 import { ArrowLeft, ArrowRight, CalendarDays, Check, ClipboardList, Heart, House, Info, Leaf, Minus, Plus, Search, ShieldAlert, ShoppingBag, Sparkles, Trash2, Utensils, X } from 'lucide-react';
 import { getGetMealQueryKey } from '@workspace/api-client-react';
+
+const OperationsGate = lazy(() => import('./pages/operations').then(m => ({ default: m.OperationsGate })));
+const TestMarket = lazy(() => import('./pages/operations').then(m => ({ default: m.TestMarket })));
+const Activity = lazy(() => import('./pages/operations').then(m => ({ default: m.Activity })));
+const Help = lazy(() => import('./pages/operations').then(m => ({ default: m.Help })));
+const Notifications = lazy(() => import('./pages/operations').then(m => ({ default: m.Notifications })));
+const Workspace = lazy(() => import('./pages/operations').then(m => ({ default: m.Workspace })));
+const WeeklyBoxes = lazy(() => import('./pages/operations').then(m => ({ default: m.WeeklyBoxes })));
 
 const queryClient = new QueryClient();
 const CART_KEY = 'nomilora-cart-v1';
@@ -116,7 +125,7 @@ function Header() {
           <Link href="/explore" className="nav-link">Explore meals</Link>
           <Link href="/#how-it-works" className="nav-link">How it works</Link>
           <Link href="/plans" className="nav-link">Weekly plan</Link>
-          <Link href="/orders" className="nav-link">Demo history</Link>
+          <Link href="/activity" className="nav-link">Orders</Link>
           <Link href="/profile" className="nav-link">My tastes</Link>
         </nav>
         <div className="flex items-center gap-2">
@@ -139,7 +148,7 @@ function Footer() {
     <div className="mx-auto flex max-w-[1180px] flex-col gap-7 md:flex-row md:items-end md:justify-between">
       <div><img src="/brand/02_nomilora_stacked_transparent.png" alt="Nomilora" className="mb-3 w-[120px]" /><p className="serif text-2xl text-[#173b27]">Good food. Your way.</p></div>
       <div className="max-w-xl text-sm leading-6 text-[#5c6759]">Nomilora is preparing to serve Queens. This is an illustrative preview only: menu details are unverified, delivery zones are not active, and checkout simulations never place or charge a real order.</div>
-      <Link href="/explore" className="text-sm font-semibold text-[#a34d2c] underline underline-offset-4">Explore the menu preview</Link>
+      <div className="flex flex-wrap gap-4 text-sm font-semibold text-[#a34d2c]"><Link href="/market" className="underline">Test market</Link><Link href="/help" className="underline">Help & messages</Link><Link href="/notifications" className="underline">Notifications</Link><Link href="/workspace" className="underline">Staff workspace</Link><Link href="/waitlist" className="underline">Waitlist</Link><Link href="/partners/apply" className="underline">Restaurant inquiry</Link>{['about','privacy','terms','allergens','refunds','help-center'].map(page=><Link key={page} href={`/${page}`} className="capitalize underline">{page.replace('-',' ')}</Link>)}</div>
     </div>
   </footer>;
 }
@@ -149,7 +158,7 @@ function MobileNav() {
       ['/', 'Home', <House size={19} />],
       ['/explore', 'Explore', <Utensils size={19} />],
       ['/plans', 'My plan', <CalendarDays size={19} />],
-      ['/orders', 'Orders', <ClipboardList size={19} />],
+      ['/activity', 'Orders', <ClipboardList size={19} />],
       ['/profile', 'Profile', <Heart size={19} />],
     ].map(([href, label, icon]) => <Link key={String(href)} href={String(href)} className="flex flex-col items-center gap-1 pb-2 text-[10px] font-semibold text-[#526253]">{icon}<span>{label}</span></Link>)}
   </nav>;
@@ -179,7 +188,7 @@ function FoodImage({ meal, className = '' }: { meal: Meal; className?: string })
   return <div className={`relative overflow-hidden bg-[#e6e6d9] ${className}`}>
     <div className="absolute inset-0 z-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_30%_40%,#c4c9a8_0%,#e8e5d6_70%)]"><img src="/brand/03_nomilora_symbol_transparent.png" alt="" className="w-16 opacity-20" /></div>
     {meal.photoUrl ? <img src={meal.photoUrl} alt={meal.name} className="relative z-10 h-full w-full object-cover" loading="lazy" onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
-    {meal.demoOnly && <span className="absolute left-3 top-3 rounded-full bg-[#f8f5ed]/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#31513a]">Menu preview</span>}
+    {meal.demoOnly && <span className="absolute z-20 left-3 top-3 rounded-full bg-[#f8f5ed]/95 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-[#31513a]">Menu preview</span>}
   </div>;
 }
 function MealCard({ meal }: { meal: Meal }) {
@@ -232,11 +241,11 @@ function Home() {
         <div className="relative overflow-hidden rounded-[44%_56%_46%_54%/45%_42%_58%_55%] border-[10px] border-[#f8f5ed] bg-[#dfe3d2] shadow-[0_25px_65px_rgba(37,59,40,.12)]">
           {featured[0] ? <FoodImage meal={featured[0]} className="aspect-[.92] w-full" /> : <div className="aspect-[.92] w-full bg-[radial-gradient(ellipse_at_40%_45%,#c8cda9,#e9e5d7)]" />}
         </div>
-        <div className="absolute -bottom-1 left-0 max-w-[230px] rounded-2xl border border-[#e5dfd2] bg-[#fbf9f2] p-4 shadow-[0_15px_45px_rgba(40,48,34,.1)] sm:-left-7">
+        <div className="absolute z-20 -bottom-1 left-0 max-w-[230px] rounded-2xl border border-[#e5dfd2] bg-[#fbf9f2] p-4 shadow-[0_15px_45px_rgba(40,48,34,.1)] sm:-left-7">
           <p className="text-[10px] font-bold uppercase tracking-[.15em] text-[#a85735]">A more personal menu</p>
           <p className="serif mt-1 text-xl text-[#173b27]">Made around your kind of good.</p>
         </div>
-        <div className="absolute right-0 top-4 rounded-full bg-[#173b27] px-4 py-2 text-xs font-semibold text-[#f8f5ed]">Queens, NY · coming soon</div>
+        <div className="absolute z-20 right-0 top-4 rounded-full bg-[#173b27] px-4 py-2 text-xs font-semibold text-[#f8f5ed]">Queens, NY · coming soon</div>
       </div>
     </section>
     <section className="border-y border-[#e1dccf] bg-[#efeee5]">
@@ -275,12 +284,12 @@ function Home() {
     </section>
     <section className="mx-auto grid max-w-[1280px] gap-6 px-5 py-14 md:grid-cols-2 md:px-10 md:py-20">
       <article className="rounded-[24px] border border-[#ded9cc] bg-[#fbf9f3] p-6 sm:p-8"><p className="eyebrow">Order your way</p><h2 className="serif mt-2 text-3xl text-[#173b27]">A one-time meal, or a week of ideas.</h2><p className="mt-3 text-sm leading-6 text-[#667064]">Start with a one-time basket, or explore 5, 10, or 15 meal ideas for a future weekly plan. You are never enrolled by trying this preview.</p><div className="mt-5 flex flex-wrap gap-3"><Link href="/explore" className="rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-[#fbf8ef]">Explore meals</Link><Link href="/plans" className="rounded-full border border-[#cfcabb] px-5 py-3 text-sm font-bold text-[#31513a]">Preview weekly plans</Link></div></article>
-      <article className="rounded-[24px] border border-[#d9ddcb] bg-[#edf0e4] p-6 sm:p-8"><p className="eyebrow">Queens pilot</p><h2 className="serif mt-2 text-3xl text-[#173b27]">Astoria and Long Island City are planned.</h2><p className="mt-3 text-sm leading-6 text-[#667064]">No delivery zones, dates, or partner kitchens are active yet. Join the preview by exploring—this site does not collect a waitlist signup or promise delivery.</p><p className="mt-5 text-xs font-semibold text-[#69745f]">Availability status: not configured</p></article>
+      <article className="rounded-[24px] border border-[#d9ddcb] bg-[#edf0e4] p-6 sm:p-8"><p className="eyebrow">Queens pilot</p><h2 className="serif mt-2 text-3xl text-[#173b27]">Astoria and Long Island City are planned.</h2><p className="mt-3 text-sm leading-6 text-[#667064]">No delivery zones, dates, or partner kitchens are active yet. Register your interest in the waitlist. Joining does not promise delivery or a launch date.</p><p className="mt-5 text-xs font-semibold text-[#69745f]">Availability status: not configured</p></article>
     </section>
     <section className="mx-auto max-w-[900px] px-5 pb-14 md:px-10 md:pb-20">
       <p className="eyebrow">Good to know</p><h2 className="serif mt-2 text-4xl text-[#173b27]">A few questions, answered.</h2>
       <div className="mt-6 divide-y divide-[#ded9cc] border-y border-[#ded9cc]">{HOME_FAQS.map(([question, answer]) => <details key={question} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-semibold text-[#29432f]">{question}<Plus className="shrink-0 transition group-open:rotate-45" size={18} /></summary><p className="max-w-3xl pt-3 text-sm leading-6 text-[#687063]">{answer}</p></details>)}</div>
-      <div className="mt-8 rounded-[22px] border border-[#ded9cc] bg-[#fbf9f3] p-6 sm:flex sm:items-center sm:justify-between sm:gap-5"><div><p className="eyebrow">Queens restaurant kitchens</p><h3 className="serif mt-2 text-2xl text-[#173b27]">Interested in a future partnership?</h3><p className="mt-2 text-sm text-[#687063]">Partner onboarding and inquiry handling are not configured yet.</p></div><span className="mt-4 inline-flex cursor-not-allowed rounded-full border border-[#d0cbbd] px-4 py-2.5 text-xs font-semibold text-[#7d7d70] sm:mt-0">Partner inquiry coming later</span></div>
+      <div className="mt-8 rounded-[22px] border border-[#ded9cc] bg-[#fbf9f3] p-6 sm:flex sm:items-center sm:justify-between sm:gap-5"><div><p className="eyebrow">Queens restaurant kitchens</p><h3 className="serif mt-2 text-2xl text-[#173b27]">Interested in a future partnership?</h3><p className="mt-2 text-sm text-[#687063]">Restaurant inquiries are reviewed privately. Applying does not create an agreement or public listing.</p></div><span className="mt-4 inline-flex cursor-not-allowed rounded-full border border-[#d0cbbd] px-4 py-2.5 text-xs font-semibold text-[#7d7d70] sm:mt-0"><Link href="/partners/apply" className="underline">Send a partner inquiry</Link></span></div>
     </section>
   </div>;
 }
@@ -299,9 +308,9 @@ const HOME_CATEGORIES = [
 const HOME_FAQS = [
   ['Where will Nomilora deliver?', 'Astoria and Long Island City are planned pilot areas only. No delivery zones or dates are active, and we cannot confirm availability yet.'],
   ['Are the dishes and prices final?', 'No. Every dish, image, price, tag, ingredient, and nutrition detail is illustrative and must be confirmed with a restaurant partner before launch.'],
-  ['Can I safely use the menu with a food allergy?', 'No. All allergen declarations are unknown. Do not use this preview to make a food-safety decision; a real contact channel is not configured yet.'],
-  ['Does checkout charge me or place an order?', 'No. Checkout only validates a sample basket and shows a zero-charge simulation. No food is reserved, no delivery is scheduled, and no payment is collected.'],
-  ['Will a weekly plan renew automatically?', 'No plans or billing are active. The weekly plan screen is only a preview; nothing renews or enrolls you.'],
+  ['Can I safely use the menu with a food allergy?', 'Do not use test menu declarations as a real kitchen safety guarantee. Strict filters require reviewed ingredient and cross-contact information. You can ask questions through Help & messages; a staffed food service is not active.'],
+  ['Does checkout charge me or place an order?', 'Guest checkout is a zero-charge browser simulation. Signed-in test checkout saves test orders and reserves fictional stock. Stripe test mode uses test funds only. No real food or delivery is arranged.'],
+  ['Will a weekly plan renew automatically?', 'The public weekly-plan page never enrolls you. Signed-in Stripe test plans can simulate recurring weekly billing after explicit test checkout. Their billing controls let you pause, skip, resume or cancel. No real subscription charge is enabled.'],
 ] as const;
 
 function Explore() {
@@ -361,14 +370,14 @@ function MealDetails() {
         <div className="mt-8 flex items-center justify-between border-y border-[#ded9cc] py-5"><div><span className="text-xs uppercase tracking-[.14em] text-[#817662]">Illustrative price</span><p className="serif mt-1 text-3xl text-[#173b27]">{money(meal.priceCents)}</p></div><button onClick={() => toggleFavorite(meal.id)} aria-pressed={favorites.includes(meal.id)} className="flex h-11 items-center gap-2 rounded-full border border-[#cfcabb] px-4 text-sm font-semibold text-[#31513a]"><Heart size={17} fill={favorites.includes(meal.id) ? 'currentColor' : 'none'} />{favorites.includes(meal.id) ? 'Saved' : 'Save meal'}</button></div>
          <div className="mt-5 flex items-center justify-between rounded-xl border border-[#ded9cc] bg-[#fbf9f3] p-3"><span className="text-sm font-semibold text-[#405640]">Quantity</span><div className="inline-flex items-center rounded-full border border-[#dcd7cb]"><button onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity" className="grid h-10 w-10 place-items-center" data-testid="button-decrease-meal-quantity"><Minus size={15} /></button><span className="min-w-8 text-center text-sm font-semibold" aria-live="polite">{quantity}</span><button onClick={() => setQuantity((value) => Math.min(20, value + 1))} aria-label="Increase quantity" className="grid h-10 w-10 place-items-center" data-testid="button-increase-meal-quantity"><Plus size={15} /></button></div></div>
          <button onClick={() => setCart({ ...cart, [meal.id]: Math.min(20, (cart[meal.id] ?? 0) + quantity) })} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-[#173b27] py-4 text-sm font-bold text-[#f8f5ed]" data-testid={`button-add-detail-${meal.id}`}>Add to cart <Plus size={17} /></button>
-        <div className="mt-6 rounded-2xl border border-[#dfc8ba] bg-[#f8eae1] p-4 text-sm leading-6 text-[#744a38]"><div className="mb-1 flex items-center gap-2 font-bold"><ShieldAlert size={16} /> Allergy and nutrition details unverified</div>Ingredients and allergen declarations may be incomplete. Never rely on this preview to make a food-safety decision.</div>
+        <div className="mt-6 rounded-2xl border border-[#dfc8ba] bg-[#f8eae1] p-4 text-sm leading-6 text-[#744a38]"><div className="mb-1 flex items-center gap-2 font-bold"><ShieldAlert size={16} /> Test food information — not a safety guarantee</div>Ingredients and allergen declarations may be incomplete. Never rely on this preview to make a food-safety decision.</div>
         <div className="mt-7 space-y-4 text-sm text-[#5f6c5d]">
           <DetailLine label="Ingredients" value={meal.ingredients.join(', ') || 'Not provided'} />
-          <DetailLine label="Allergens" value={meal.allergens.join(', ') || 'Declarations unknown'} />
+          <DetailLine label="Allergens" value={meal.allergens.join(', ') || (meal.allergenStatus === 'verified' ? 'No major allergens declared in recorded test evidence' : 'Declarations unknown')} /><DetailLine label="Cross-contact" value={`${meal.crossContact ?? 'Unknown'}${meal.crossContactAllergens?.length ? ` · ${meal.crossContactAllergens.join(', ')}` : ''}`} />
           <DetailLine label="Nutrition" value="Not verified" />
           <DetailLine label="Portion" value={meal.portion} /><DetailLine label="Storage" value={meal.storage} /><DetailLine label="Reheating" value={meal.reheating} />
         </div>
-       <p className="mt-7 text-xs leading-5 text-[#898477]">Menu details and availability have not been verified. Adding this dish only saves it to your local preview cart. Delivery is not active.</p>
+       <p className="mt-7 text-xs leading-5 text-[#898477]">Menu details are for test use only. Your basket follows the guest or signed-in save status shown above. Real delivery is not active.</p>
       </div>
     </div>
   </div>;
@@ -381,6 +390,7 @@ function Cart() {
   const [zipCode, setZipCode] = useState('');
   const [deliveryChecked, setDeliveryChecked] = useState(false);
   const rows = Object.entries(cart).filter(([, quantity]) => quantity > 0).map(([id, quantity]) => ({ meal: meals.find((entry) => entry.id === id), id, quantity })).filter((entry): entry is { meal: Meal; id: string; quantity: number } => !!entry.meal);
+  const unavailable = Object.keys(cart).filter(id => cart[id] > 0 && !meals.some(meal => meal.id === id));
   const subtotal = rows.reduce((sum, row) => sum + row.meal.priceCents * row.quantity, 0);
   const update = (id: string, amount: number) => {
     const quantity = Math.max(0, Math.min(20, amount));
@@ -391,6 +401,7 @@ function Cart() {
   return <div className="mx-auto max-w-[1100px] px-5 py-10 md:px-10 md:py-16">
     <p className="eyebrow">Your saved selection</p><h1 className="serif mt-2 text-5xl text-[#173b27]">Preview cart</h1><p className="mt-3 text-[#677165]">Nothing here is an active order. {session ? 'Changes sync to your account; check the save status above.' : 'Your selection is saved on this device.'}</p>
     <div className="mt-7"><StatusNotice readiness={readiness} /></div>
+    {unavailable.length > 0 && <div role="status" className="mt-6 rounded-xl border border-[#ddd8cc] p-4"><p>Some saved meals are no longer available. Remove them before placing a test order.</p><button className="mt-3 underline" onClick={() => setCart(Object.fromEntries(Object.entries(cart).filter(([id]) => !unavailable.includes(id))))}>Remove unavailable meals ({unavailable.length})</button></div>}
     {!rows.length ? <div className="mt-9"><EmptyState title="Your table is still clear" text="Add a dish from the menu preview and it will be saved here." action="Browse the menu" href="/explore" /></div> : <div className="mt-9 grid items-start gap-8 md:grid-cols-[1fr_340px]">
       <div className="space-y-3">{rows.map(({ meal, id, quantity }) => <article key={id} className="flex gap-4 rounded-2xl border border-[#e1dccf] bg-[#fbf9f3] p-3 sm:gap-5 sm:p-4">
         <Link href={`/meals/${id}`} className="w-[106px] shrink-0 overflow-hidden rounded-xl sm:w-[150px]"><FoodImage meal={meal} className="aspect-square h-full" /></Link>
@@ -402,7 +413,7 @@ function Cart() {
         <div className="mt-5 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] p-4"><p className="text-sm font-semibold text-[#35513a]">Check a delivery area</p><p className="mt-1 text-xs leading-5 text-[#79796d]">This only checks preview readiness; no address is saved.</p><div className="mt-3 flex gap-2"><input value={zipCode} onChange={(event) => { setZipCode(event.target.value.replace(/\D/g, '').slice(0, 5)); setDeliveryChecked(false); }} inputMode="numeric" autoComplete="postal-code" aria-label="ZIP code" placeholder="5-digit ZIP" className="h-11 min-w-0 flex-1 rounded-lg border border-[#d7d2c5] bg-white px-3 text-sm" data-testid="input-delivery-zip" /><button onClick={() => setDeliveryChecked(true)} disabled={!/^\d{5}$/.test(zipCode)} className="rounded-lg bg-[#e9ecdf] px-3 text-xs font-bold text-[#31513a] disabled:cursor-not-allowed disabled:opacity-50" data-testid="button-check-delivery">Check</button></div>{deliveryChecked && <p className="mt-3 text-xs leading-5 text-[#8a4d36]" role="status">{readiness?.activeDeliveryZones.length ? 'Zone status needs confirmation before ordering.' : 'No verified delivery zones are active. We cannot confirm delivery for this ZIP code.'}</p>}</div>
         <div className="mt-3 rounded-xl border border-dashed border-[#d2cdbf] p-4"><p className="text-sm font-semibold text-[#5f6658]">Discount code</p><input disabled placeholder="Promos are not configured" aria-label="Discount code placeholder" className="mt-3 h-10 w-full rounded-lg border border-[#dfdacd] bg-[#f1efe7] px-3 text-xs text-[#89887c]" /><p className="mt-2 text-[11px] text-[#858376]">No discounts are applied in this preview.</p></div>
         <div className="mt-3 rounded-xl border border-[#ded9cc] bg-[#fbf9f3] p-4"><label htmlFor="delivery-slot" className="text-sm font-semibold text-[#5f6658]">Scheduled delivery</label><select id="delivery-slot" disabled className="mt-3 h-11 w-full rounded-lg border border-[#dfdacd] bg-[#f1efe7] px-3 text-xs text-[#89887c]"><option>No delivery windows configured</option></select><p className="mt-2 text-[11px] text-[#858376]">Scheduling will appear when a verified pilot zone is active.</p></div>
-        <p className="mt-4 text-xs leading-5 text-[#796f5e]">Delivery, fees, taxes, and availability are not configured. This is not a live checkout.</p><Link href="/checkout" className="mt-6 flex items-center justify-center gap-2 rounded-full bg-[#173b27] py-4 text-sm font-bold text-[#fbf8ef]">Continue to demo checkout <ArrowRight size={16} /></Link><button onClick={() => setCart({})} className="mt-3 w-full rounded-full py-3 text-sm font-semibold text-[#92503a] hover:bg-[#e9e5db]">Clear preview cart</button></aside>
+        <p className="mt-4 text-xs leading-5 text-[#796f5e]">Delivery, fees, taxes, and availability are not configured. This is not a live checkout.</p><Link href={session ? "/market" : "/checkout"} className="mt-6 flex items-center justify-center gap-2 rounded-full bg-[#173b27] py-4 text-sm font-bold text-[#fbf8ef]">{session ? "Continue to saved test checkout" : "Continue to demo checkout"} <ArrowRight size={16} /></Link><button onClick={() => setCart({})} className="mt-3 w-full rounded-full py-3 text-sm font-semibold text-[#92503a] hover:bg-[#e9e5db]">Clear preview cart</button></aside>
     </div>}
   </div>;
 }
@@ -463,22 +474,22 @@ function Quiz() {
   };
   const finish = () => recommendation.mutate({ data: profile }, { onSuccess: setResult });
   const steps = ['How you eat', 'What matters', 'Favorite cuisines', 'Things to avoid', 'Your week'];
-  const recommended = profile.strictAllergens.length ? [] : result?.recommendations.map((entry) => meals.find((meal) => meal.id === entry.mealId)).filter((meal): meal is Meal => !!meal) ?? [];
+  const recommended = result?.recommendations.map((entry) => meals.find((meal) => meal.id === entry.mealId)).filter((meal): meal is Meal => !!meal) ?? [];
   const hasStrictDietaryPreference = profile.eatingStyles.some((style) => STRICT_DIETARY_STYLES.includes(style));
   return <div className="mx-auto max-w-[960px] px-5 py-10 md:px-10 md:py-16">
     <p className="eyebrow">The Nomilora taste quiz</p><h1 className="serif mt-2 text-5xl text-[#173b27] md:text-6xl">A menu that feels like yours.</h1><p className="mt-3 max-w-xl text-[#667064]">Optional and editable. {session ? 'Changes sync to your account; check the save status above.' : 'Saved only in this browser.'} These are preference matches, not safety or nutrition advice.</p>
     <div className="mt-8 flex gap-2" aria-label={`Step ${step + 1} of 5`}>{steps.map((label, index) => <div key={label} className={`h-1.5 flex-1 rounded-full ${index <= step ? 'bg-[#173b27]' : 'bg-[#dedbcf]'}`} />)}</div>
     <section className="mt-5 rounded-[26px] border border-[#dfdacd] bg-[#fbf9f3] p-5 sm:p-9">
       <div className="flex items-center justify-between"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#a34d2c]">Step {step + 1} of 5</p><span className="text-xs text-[#878476]">{steps[step]}</span></div>
-      {step === 0 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">What describes how you eat?</h2><p className="mt-2 text-sm text-[#727668]">Taste preferences can shape rankings. Dietary restrictions exclude incompatible dishes; because every preview label is unverified, strict diet selections return no matches.</p><OptionGrid options={STYLE_OPTIONS} selected={profile.eatingStyles} onToggle={(value) => toggle('eatingStyles', value)} /></>}
+      {step === 0 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">What describes how you eat?</h2><p className="mt-2 text-sm text-[#727668]">Taste preferences can shape rankings. Dietary restrictions exclude incompatible dishes; unknown or incompatible declarations are excluded from strict matches.</p><OptionGrid options={STYLE_OPTIONS} selected={profile.eatingStyles} onToggle={(value) => toggle('eatingStyles', value)} /></>}
       {step === 1 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">What would make dinner better?</h2><p className="mt-2 text-sm text-[#727668]">Pick the things you want more of.</p><OptionGrid options={GOAL_OPTIONS} selected={profile.goals} onToggle={(value) => toggle('goals', value)} /></>}
       {step === 2 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">Which cuisines call to you?</h2><p className="mt-2 text-sm text-[#727668]">Select a few, or skip ahead if you're open to anything.</p><OptionGrid options={CUISINE_OPTIONS} selected={profile.cuisines} onToggle={(value) => toggle('cuisines', value)} /></>}
-      {step === 3 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">Anything you strictly avoid?</h2><div className="mt-4 flex gap-3 rounded-xl border border-[#e0c7b7] bg-[#faeee5] p-4 text-sm leading-6 text-[#754a39]"><ShieldAlert className="mt-1 shrink-0" size={17} /><p><b>Important:</b> all preview meal allergen declarations are unknown. If you select any strict allergen, the recommender will return no matches. Never use this preview to assess food safety.</p></div><OptionGrid options={ALLERGEN_OPTIONS} selected={profile.strictAllergens} onToggle={(value) => toggle('strictAllergens', value)} /></>}
+      {step === 3 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">Anything you strictly avoid?</h2><div className="mt-4 flex gap-3 rounded-xl border border-[#e0c7b7] bg-[#faeee5] p-4 text-sm leading-6 text-[#754a39]"><ShieldAlert className="mt-1 shrink-0" size={17} /><p><b>Important:</b> strict allergens exclude meals with unverified or conflicting ingredient and cross-contact declarations. Recorded test evidence is not a food-safety guarantee. Never use this preview to assess food safety.</p></div><OptionGrid options={ALLERGEN_OPTIONS} selected={profile.strictAllergens} onToggle={(value) => toggle('strictAllergens', value)} /></>}
       {step === 4 && <><h2 className="serif mt-3 text-3xl text-[#173b27]">How many dinners are you thinking?</h2><p className="mt-2 text-sm text-[#727668]">This shapes a preview only. There are no active subscriptions or plan charges.</p><div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">{WEEK_OPTIONS.map((option) => <button key={option} onClick={() => { setProfile({ ...profile, mealsPerWeek: option as RecommendationInput['mealsPerWeek'] }); setResult(null); }} aria-pressed={profile.mealsPerWeek === option} className={`rounded-2xl border px-4 py-5 text-left ${profile.mealsPerWeek === option ? 'border-[#173b27] bg-[#e8ecdf] text-[#173b27]' : 'border-[#ded9cc] bg-white/40 text-[#556252]'}`}><span className="serif text-2xl">{option}</span><span className="mt-1 block text-xs">meals each week</span></button>)}</div><fieldset className="mt-6"><legend className="text-sm font-semibold text-[#405640]">Preferred meal types</legend><div className="mt-3 flex flex-wrap gap-4">{(['Breakfast', 'Lunch', 'Dinner', 'Soup or light meal'] as const).map(type => <label key={type} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={profile.preferredMealTypes?.includes(type) ?? false} onChange={event => { const current = profile.preferredMealTypes ?? []; setProfile({ ...profile, preferredMealTypes: event.target.checked ? [...current, type] : current.filter(value => value !== type) }); setResult(null); }} />{type}</label>)}</div></fieldset><label className="mt-6 block text-sm font-semibold text-[#405640]">Flavors or ingredients you dislike <input value={profile.dislikes.join(', ')} onChange={(event) => { const value = event.target.value.split(',').map((item) => item.trim()).filter(Boolean); setProfile({ ...profile, dislikes: value }); setResult(null); }} placeholder="For example: olives, cilantro" className="mt-2 h-12 w-full rounded-xl border border-[#dcd7cb] bg-[#fffdf8] px-4 font-normal outline-none focus:border-[#678265]" data-testid="input-dislikes" /><span className="mt-1 block text-xs font-normal text-[#838477]">Separate items with commas.</span></label></>}
       <div className="mt-9 flex justify-between border-t border-[#e7e2d7] pt-5"><button onClick={() => setStep(Math.max(0, step - 1))} disabled={step === 0} className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-[#5a6759] disabled:invisible"><ArrowLeft size={16} /> Back</button>{step < 4 ? <button onClick={() => setStep(step + 1)} className="inline-flex items-center gap-2 rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-white">Continue <ArrowRight size={16} /></button> : <button onClick={finish} disabled={recommendation.isPending} className="inline-flex items-center gap-2 rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-white disabled:opacity-50">{recommendation.isPending ? 'Finding matches…' : 'Show my menu preview'} <Sparkles size={16} /></button>}</div>
       {recommendation.isError && <p role="alert" className="mt-4 text-sm text-[#9a432d]">We couldn't create your recommendations. Please try again.</p>}
     </section>
-    {result && <section className="mt-8 rounded-[24px] border border-[#d8dfc9] bg-[#edf0e4] p-5 sm:p-8" aria-live="polite"><p className="eyebrow">Your preview</p><h2 className="serif mt-2 text-3xl text-[#173b27]">{result.preferenceSummary || 'A few ideas for your table'}</h2>{(result.allergenNotice || profile.strictAllergens.length > 0) && <div className="mt-4 flex gap-3 rounded-xl border border-[#dfc4b4] bg-[#faeee5] p-4 text-sm leading-6 text-[#754a39]"><ShieldAlert className="mt-1 shrink-0" size={18} /><p>{result.allergenNotice || 'All illustrative menu allergen declarations are unknown, so no dishes can be recommended for a strict allergen preference.'}</p></div>}{recommended.length ? <div className="mt-6"><MealGrid meals={recommended} /></div> : <div className="mt-5"><EmptyState title={profile.strictAllergens.length ? 'No safe matches in this preview' : hasStrictDietaryPreference ? 'No verified dietary matches' : 'No dishes match those dislikes'} text={profile.strictAllergens.length ? 'Every illustrative menu item has unknown allergen declarations. We will not recommend a dish against a strict allergen preference. The contact channel is not configured yet; do not rely on this preview for food safety.' : hasStrictDietaryPreference ? 'Every demo dietary label is unverified. We exclude all unverified dishes from strict diet recommendations instead of treating them as compatible.' : 'Try removing one or more dislikes, or browse the full illustrative menu.'} action="Browse menu preview" href="/explore" /></div>}</section>}
+    {result && <section className="mt-8 rounded-[24px] border border-[#d8dfc9] bg-[#edf0e4] p-5 sm:p-8" aria-live="polite"><p className="eyebrow">Your preview</p><h2 className="serif mt-2 text-3xl text-[#173b27]">{result.preferenceSummary || 'A few ideas for your table'}</h2>{(result.allergenNotice || profile.strictAllergens.length > 0) && <div className="mt-4 flex gap-3 rounded-xl border border-[#dfc4b4] bg-[#faeee5] p-4 text-sm leading-6 text-[#754a39]"><ShieldAlert className="mt-1 shrink-0" size={18} /><p>{result.allergenNotice || 'All illustrative menu allergen declarations are unknown, so no dishes can be recommended for a strict allergen preference.'}</p></div>}{recommended.length ? <div className="mt-6"><MealGrid meals={recommended} /></div> : <div className="mt-5"><EmptyState title={profile.strictAllergens.length ? 'No verified matches in this preview' : hasStrictDietaryPreference ? 'No verified dietary matches' : 'No dishes match those dislikes'} text={profile.strictAllergens.length ? 'No recorded declarations match your strict allergens. Unknown or conflicting information is excluded. Use Help & messages for a test inquiry; never rely on this preview for food safety.' : hasStrictDietaryPreference ? 'No verified dietary declarations match your selected restrictions. Unknown or incompatible dishes are excluded.' : 'Try removing one or more dislikes, or browse the full illustrative menu.'} action="Browse menu preview" href="/explore" /></div>}</section>}
   </div>;
 }
 function OptionGrid({ options, selected, onToggle }: { options: string[]; selected: string[]; onToggle: (value: string) => void }) {
@@ -513,7 +524,7 @@ function Plans() {
     <div className="grid gap-8 md:grid-cols-[1fr_.72fr] md:items-end"><div><p className="eyebrow">A week, imagined</p><h1 className="serif mt-3 text-5xl leading-[1.02] text-[#173b27] md:text-6xl">A little less planning. A little more dinner.</h1><p className="mt-4 max-w-xl leading-7 text-[#667064]">A flexible look at what your week could feel like. This is a plan preview only—not a subscription, booking, or meal delivery.</p></div><div className="rounded-2xl border border-[#dfdacd] bg-[#f1efe7] p-5"><p className="text-xs font-bold uppercase tracking-[.14em] text-[#8b765f]">Preview size</p><select value={count} onChange={(event) => { const nextCount = Number(event.target.value); setCount(nextCount); setSelectedIds((current) => current?.slice(0, nextCount) ?? null); }} aria-label="Meals in plan preview" className="mt-3 h-12 w-full rounded-xl border border-[#d7d2c5] bg-[#fbf9f3] px-4 text-sm font-semibold text-[#31513a]">{[5, 10, 15].map((value) => <option key={value} value={value}>{value} meal ideas</option>)}</select><p className="mt-3 text-xs leading-5 text-[#77786c]">Weekly plan billing is disabled. No plan can be purchased.</p></div></div>
     <div className="mt-8 rounded-xl border border-[#d8dfc9] bg-[#edf0e4] p-4 text-sm text-[#38533d]"><Info size={16} className="mr-2 inline" />Your current taste profile influences the ideas below. All food information is illustrative and unverified.</div>
     <div className="mt-8 space-y-3">{planMeals.length ? planMeals.map((meal, index) => <article key={meal.id} className="grid items-center gap-4 rounded-[20px] border border-[#dfdacd] bg-[#fbf9f3] p-3 sm:grid-cols-[58px_96px_1fr_auto] sm:p-4"><div className="serif pl-2 text-2xl text-[#a85735]">{String(index + 1).padStart(2, '0')}</div><Link href={`/meals/${meal.id}`} className="overflow-hidden rounded-xl"><FoodImage meal={meal} className="aspect-square" /></Link><div><p className="text-[10px] uppercase tracking-[.15em] text-[#8b765f]">{meal.cuisine} · {meal.mealType}</p><Link href={`/meals/${meal.id}`} className="serif mt-1 block text-2xl text-[#173b27]">{meal.name}</Link><p className="mt-1 line-clamp-1 text-sm text-[#74786d]">{meal.description}</p></div><div className="flex items-center gap-3"><span className="text-sm font-bold">{money(meal.priceCents)}</span><button onClick={() => togglePlanMeal(meal.id)} aria-label={`Remove ${meal.name} from weekly preview`} className="rounded-full border border-[#d1cbbd] px-3 py-2 text-xs font-semibold text-[#8c4f38]" data-testid={`button-remove-plan-${meal.id}`}>Remove</button></div></article>) : <EmptyState title="Choose a few meal ideas" text="Add dishes below to shape this local preview. Nothing is scheduled or billed." action="Explore meals" href="/explore" />}</div>
-    <section className="mt-8 rounded-[22px] border border-[#ded9cc] bg-[#f1efe7] p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="serif text-2xl text-[#173b27]">Edit this preview</h2><p className="mt-1 text-xs text-[#73776a]">{planMeals.length} of {count} meal ideas selected</p></div><Link href="/explore" className="text-sm font-bold text-[#a34d2c]">Browse the menu</Link></div><div className="mt-4 flex flex-wrap gap-2">{availableMeals.filter((meal) => !activeIds.includes(meal.id)).slice(0, 8).map((meal) => <button key={meal.id} onClick={() => togglePlanMeal(meal.id)} disabled={planMeals.length >= count} className="rounded-full border border-[#d1cbbd] bg-[#fbf9f3] px-3 py-2 text-xs font-semibold text-[#35513a] disabled:opacity-50" data-testid={`button-add-plan-${meal.id}`}><Plus size={13} className="mr-1 inline" />{meal.name}</button>)}</div><div className="mt-6 border-t border-[#d9d4c7] pt-5"><p className="text-sm font-semibold text-[#35513a]">Plan controls (preview only)</p><div className="mt-3 flex flex-wrap gap-2">{[['paused', 'Preview pause'], ['skipped', 'Preview skip week'], ['cancelled', 'Preview cancel']].map(([value, label]) => <button key={value} onClick={() => setPreviewAction(value)} aria-pressed={previewAction === value} className={`rounded-full border px-4 py-2.5 text-xs font-semibold ${previewAction === value ? 'border-[#173b27] bg-[#e6eadd] text-[#173b27]' : 'border-[#d1cbbd] bg-[#fbf9f3] text-[#5e6758]'}`} data-testid={`button-${value}-plan-preview`}>{label}</button>)}</div>{previewAction && <p className="mt-3 text-xs text-[#6e7165]" role="status">Preview control selected. No subscription exists, and no real plan was paused, skipped, or canceled.</p>}<p className="mt-3 text-[11px] leading-5 text-[#77786c]">These controls demonstrate the intended experience only. Billing, delivery, and active plans are not configured.</p></div></section>
+    <section className="mt-8 rounded-[22px] border border-[#ded9cc] bg-[#f1efe7] p-5"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="serif text-2xl text-[#173b27]">Edit this preview</h2><p className="mt-1 text-xs text-[#73776a]">{planMeals.length} of {count} meal ideas selected</p></div><Link href="/explore" className="text-sm font-bold text-[#a34d2c]">Browse the menu</Link></div><div className="mt-4 flex flex-wrap gap-2">{availableMeals.filter((meal) => !activeIds.includes(meal.id)).slice(0, 8).map((meal) => <button key={meal.id} onClick={() => togglePlanMeal(meal.id)} disabled={planMeals.length >= count} className="rounded-full border border-[#d1cbbd] bg-[#fbf9f3] px-3 py-2 text-xs font-semibold text-[#35513a] disabled:opacity-50" data-testid={`button-add-plan-${meal.id}`}><Plus size={13} className="mr-1 inline" />{meal.name}</button>)}</div><div className="mt-6 border-t border-[#d9d4c7] pt-5"><p className="text-sm font-semibold text-[#35513a]">Plan controls (preview only)</p><Link href="/activity" className="mt-3 inline-block text-sm font-semibold underline">Manage persisted Stripe test billing</Link><div className="mt-3 flex flex-wrap gap-2">{[['paused', 'Preview pause'], ['skipped', 'Preview skip week'], ['cancelled', 'Preview cancel']].map(([value, label]) => <button key={value} onClick={() => setPreviewAction(value)} aria-pressed={previewAction === value} className={`rounded-full border px-4 py-2.5 text-xs font-semibold ${previewAction === value ? 'border-[#173b27] bg-[#e6eadd] text-[#173b27]' : 'border-[#d1cbbd] bg-[#fbf9f3] text-[#5e6758]'}`} data-testid={`button-${value}-plan-preview`}>{label}</button>)}</div>{previewAction && <p className="mt-3 text-xs text-[#6e7165]" role="status">Preview control selected. No subscription exists, and no real plan was paused, skipped, or canceled.</p>}<p className="mt-3 text-[11px] leading-5 text-[#77786c]">These controls demonstrate the intended experience only. Billing, delivery, and active plans are not configured.</p></div></section>
     <div className="mt-8 flex flex-wrap gap-3"><Link href="/quiz" className="rounded-full bg-[#173b27] px-5 py-3 text-sm font-bold text-white">Adjust my tastes</Link><Link href="/profile" className="rounded-full border border-[#cccabb] px-5 py-3 text-sm font-bold text-[#31513a]">Manage preferences</Link></div>
   </div>;
 }
@@ -530,7 +541,7 @@ function Profile() {
         <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">Meals per week</p><p className="mt-2 text-sm text-[#4d5c4a]">{profile.mealsPerWeek}</p></div>
         <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">Dislikes</p><p className="mt-2 text-sm text-[#4d5c4a]">{profile.dislikes.length ? profile.dislikes.join(', ') : 'Not set'}</p></div>
         <button onClick={() => setProfile({ eatingStyles: [], goals: [], cuisines: [], strictAllergens: [], dislikes: [], mealsPerWeek: 'One-time' })} className="mt-6 rounded-full border border-[#d3cfc2] px-4 py-2.5 text-xs font-semibold text-[#8b4e37] hover:bg-[#f5e9e2]">Clear taste profile</button>
-        {profile.strictAllergens.length > 0 && <p className="mt-4 rounded-xl bg-[#faeee5] p-3 text-xs leading-5 text-[#794d3a]">Strict allergy selected: recommendations will return no meals because allergen declarations are unknown.</p>}
+        {profile.strictAllergens.length > 0 && <p className="mt-4 rounded-xl bg-[#faeee5] p-3 text-xs leading-5 text-[#794d3a]">Strict allergens exclude meals with unknown or conflicting declarations.</p>}
       </section>
       <section><div className="mb-4 flex items-end justify-between"><div><p className="eyebrow">Kept close</p><h2 className="serif mt-1 text-3xl text-[#173b27]">Saved meals</h2></div><span className="text-xs text-[#77796b]">{favoriteMeals.length} saved</span></div>
         {favoriteMeals.length ? <div className="grid gap-5 sm:grid-cols-2">{favoriteMeals.map((meal) => <div key={meal.id} className="relative"><MealCard meal={meal} /><button onClick={() => toggleFavorite(meal.id)} className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-[#bd5d36] text-white" aria-label={`Remove ${meal.name} from favorites`}><X size={17} /></button></div>)}</div> : <EmptyState title="Your favorites are waiting" text="Save a dish to keep it close for later." action="Explore the menu" href="/explore" />}
@@ -540,7 +551,13 @@ function Profile() {
 }
 function ProfileChips({ title, values }: { title: string; values: string[] }) { return <div className="mt-5 border-t border-[#e6e1d6] pt-4"><p className="text-xs font-bold uppercase tracking-[.13em] text-[#8a7965]">{title}</p><div className="mt-2 flex flex-wrap gap-2">{values.length ? values.map((value) => <span key={value} className="rounded-full bg-[#e9ecdf] px-3 py-1.5 text-xs font-semibold text-[#456047]">{value}</span>) : <span className="text-sm text-[#8a8b7d]">Not set</span>}</div></div>; }
 
-function AccountRoute() { const { customer } = useApp(); return <AccountPage customer={customer} />; }
+function BoxesRoute(){const {customer}=useApp();return <OperationsGate customer={customer}><WeeklyBoxes customer={customer}/></OperationsGate>;}
+function MarketRoute() { const { customer }=useApp();return <OperationsGate customer={customer}><TestMarket customer={customer}/></OperationsGate>; }
+function ActivityRoute() { const { customer }=useApp();return <OperationsGate customer={customer}><Activity/></OperationsGate>; }
+function HelpRoute() { const { customer }=useApp();return <OperationsGate customer={customer}><Help customer={customer}/></OperationsGate>; }
+function NotificationsRoute() { const { customer }=useApp();return <OperationsGate customer={customer}><Notifications/></OperationsGate>; }
+function WorkspaceRoute() { const { customer }=useApp();return <OperationsGate customer={customer}><Workspace customer={customer}/></OperationsGate>; }
+function AccountRoute() { const { customer } = useApp(); return <><AccountPage customer={customer} /><div className="mx-auto flex max-w-4xl flex-wrap gap-5 px-5"><Link href="/market" className="underline">Test market</Link><Link href="/activity" className="underline">Orders & plans</Link><Link href="/help" className="underline">Help & messages</Link></div></>; }
 function SessionShell({ children }: { children: ReactNode }) {
   const auth = useAuth();
   if (!auth.ready) return <p className="p-8" role="status">Restoring your session…</p>;
@@ -552,7 +569,7 @@ function App() {
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <AuthProvider><SessionShell>
           <RoutedErrorBoundary>
-            <Switch>
+            <Suspense fallback={<p role="status" className="p-8">Loading your workspace…</p>}><Switch>
               <Route path="/" component={Home} />
               <Route path="/explore" component={Explore} />
               <Route path="/quiz" component={Quiz} />
@@ -561,10 +578,19 @@ function App() {
               <Route path="/checkout" component={Checkout} />
               <Route path="/orders" component={Orders} />
               <Route path="/plans" component={Plans} />
+              <Route path="/partners/apply">{()=> <Inquiry kind="partner"/>}</Route>
+              <Route path="/waitlist">{()=> <Inquiry kind="waitlist"/>}</Route>
+              {['about','privacy','terms','allergens','refunds','help-center'].map(page=><Route key={page} path={`/${page}`}>{()=> <Information page={page}/>}</Route>)}
+              <Route path="/boxes" component={BoxesRoute} />
+              <Route path="/market" component={MarketRoute} />
+              <Route path="/activity" component={ActivityRoute} />
+              <Route path="/help" component={HelpRoute} />
+              <Route path="/notifications" component={NotificationsRoute} />
+              <Route path="/workspace" component={WorkspaceRoute} />
               <Route path="/account" component={AccountRoute} />
               <Route path="/profile" component={Profile} />
               <Route component={NotFound} />
-            </Switch>
+            </Switch></Suspense>
           </RoutedErrorBoundary>
         </SessionShell></AuthProvider>
       </WouterRouter>

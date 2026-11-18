@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import {
   addressInput,
@@ -29,6 +29,9 @@ type Customer = ReturnType<typeof useCustomerAccount>;
 
 export function AccountPage({ customer }: { customer: Customer }) {
   const { session, recovery } = useAuth();
+  const [changePassword, setChangePassword] = useState(false);
+  const resetting = recovery || changePassword;
+  const [passwordAssured, setPasswordAssured] = useState(false);
   const [mode, setMode] = useState<"login" | "signup" | "forgot" | "resend">(
     "login",
   );
@@ -45,12 +48,17 @@ export function AccountPage({ customer }: { customer: Customer }) {
     setMessage("");
     const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}account`;
     try {
-      if (recovery && session) {
+      if (resetting && session) {
+        if (!passwordAssured)
+          throw new Error(
+            "Verify your authenticator before updating your password.",
+          );
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
         const result = await supabase.auth.signOut();
         if (result.error) throw result.error;
         setPassword("");
+        setChangePassword(false);
         setMessage("Password updated. Sign in with your new password.");
       } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({
@@ -143,100 +151,109 @@ export function AccountPage({ customer }: { customer: Customer }) {
             Explore meals
           </Link>
         </section>
-      ) : !session || recovery ? (
-        <form
-          onSubmit={submit}
-          className="mt-8 max-w-md space-y-5 rounded-2xl border border-[#d8d3c6] bg-[#fbf9f3] p-6"
-        >
-          <h2 className="serif text-3xl">
-            {recovery
-              ? "Set a new password"
-              : {
-                  login: "Welcome back",
-                  signup: "Create your account",
-                  forgot: "Recover your account",
-                  resend: "Resend verification",
-                }[mode]}
-          </h2>
-          {!recovery && (
-            <label className="block text-sm font-semibold">
-              Email
-              <input
-                required
-                type="email"
-                autoComplete="email"
-                maxLength={254}
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className={inputClass}
-              />
-            </label>
+      ) : !session || resetting ? (
+        <>
+          {resetting && session && (
+            <MfaSettings recovery onAssuranceChange={setPasswordAssured} />
           )}
-          {(recovery || mode === "login" || mode === "signup") && (
-            <label className="block text-sm font-semibold">
-              Password
-              <input
-                required
-                type="password"
-                autoComplete={
-                  recovery || mode === "signup"
-                    ? "new-password"
-                    : "current-password"
-                }
-                minLength={mode === "login" && !recovery ? 1 : 12}
-                maxLength={128}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className={inputClass}
-              />
-              {(mode === "signup" || recovery) && (
-                <span className="mt-1 block text-xs font-normal">
-                  Use at least 12 characters.
-                </span>
-              )}
-            </label>
-          )}
-          <button disabled={busy} className={buttonClass}>
-            {busy
-              ? "Please wait…"
-              : recovery
-                ? "Update password"
+          <form
+            onSubmit={submit}
+            className="mt-8 max-w-md space-y-5 rounded-2xl border border-[#d8d3c6] bg-[#fbf9f3] p-6"
+          >
+            <h2 className="serif text-3xl">
+              {resetting
+                ? "Set a new password"
                 : {
-                    login: "Sign in",
-                    signup: "Register",
-                    forgot: "Send recovery email",
-                    resend: "Send verification email",
+                    login: "Welcome back",
+                    signup: "Create your account",
+                    forgot: "Recover your account",
+                    resend: "Resend verification",
                   }[mode]}
-          </button>
-          {!recovery && (
-            <div className="flex flex-wrap gap-4 text-sm">
-              {(["login", "signup", "forgot", "resend"] as const)
-                .filter((item) => item !== mode)
-                .map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => {
-                      setMode(item);
-                      setError("");
-                      setMessage("");
-                      setPassword("");
-                    }}
-                    className="text-[#a34d2c] underline"
-                  >
-                    {
+            </h2>
+            {!resetting && (
+              <label className="block text-sm font-semibold">
+                Email
+                <input
+                  required
+                  type="email"
+                  autoComplete="email"
+                  maxLength={254}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            )}
+            {(resetting || mode === "login" || mode === "signup") && (
+              <label className="block text-sm font-semibold">
+                Password
+                <input
+                  required
+                  type="password"
+                  autoComplete={
+                    resetting || mode === "signup"
+                      ? "new-password"
+                      : "current-password"
+                  }
+                  minLength={mode === "login" && !resetting ? 1 : 12}
+                  disabled={resetting && !passwordAssured}
+                  maxLength={128}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className={inputClass}
+                />
+                {(mode === "signup" || resetting) && (
+                  <span className="mt-1 block text-xs font-normal">
+                    Use at least 12 characters.
+                  </span>
+                )}
+              </label>
+            )}
+            <button
+              disabled={busy || (resetting && !passwordAssured)}
+              className={buttonClass}
+            >
+              {busy
+                ? "Please wait…"
+                : resetting
+                  ? "Update password"
+                  : {
+                      login: "Sign in",
+                      signup: "Register",
+                      forgot: "Send recovery email",
+                      resend: "Send verification email",
+                    }[mode]}
+            </button>
+            {!resetting && (
+              <div className="flex flex-wrap gap-4 text-sm">
+                {(["login", "signup", "forgot", "resend"] as const)
+                  .filter((item) => item !== mode)
+                  .map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => {
+                        setMode(item);
+                        setError("");
+                        setMessage("");
+                        setPassword("");
+                      }}
+                      className="text-[#a34d2c] underline"
+                    >
                       {
-                        login: "Sign in",
-                        signup: "Register",
-                        forgot: "Forgot password?",
-                        resend: "Verify email",
-                      }[item]
-                    }
-                  </button>
-                ))}
-            </div>
-          )}
-        </form>
+                        {
+                          login: "Sign in",
+                          signup: "Register",
+                          forgot: "Forgot password?",
+                          resend: "Verify email",
+                        }[item]
+                      }
+                    </button>
+                  ))}
+              </div>
+            )}
+          </form>
+        </>
       ) : (
         <>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
@@ -255,8 +272,23 @@ export function AccountPage({ customer }: { customer: Customer }) {
             Saved account data stays separate from this browser’s guest preview.
             Addresses do not activate delivery.
           </p>
+          <button
+            type="button"
+            className="mt-4 underline"
+            onClick={() => {
+              setPassword("");
+              setPasswordAssured(false);
+              setChangePassword(true);
+              setError("");
+            }}
+          >
+            Change password
+          </button>
           {customer.account && (
-            <AccountDetails key={customer.account.id} customer={customer} />
+            <>
+              <MfaSettings />
+              <AccountDetails key={customer.account.id} customer={customer} />
+            </>
           )}
         </>
       )}
@@ -496,5 +528,179 @@ function AccountDetails({ customer }: { customer: Customer }) {
         </form>
       </section>
     </div>
+  );
+}
+
+function MfaSettings({
+  recovery = false,
+  onAssuranceChange,
+}: {
+  recovery?: boolean;
+  onAssuranceChange?: (allowed: boolean) => void;
+} = {}) {
+  const { session } = useAuth();
+  const [factorId, setFactor] = useState(""),
+    [qr, setQr] = useState(""),
+    [code, setCode] = useState(""),
+    [status, setStatus] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false),
+    [version, setVersion] = useState(0);
+  useEffect(() => {
+    if (!supabase || !session) return;
+    let active = true;
+    onAssuranceChange?.(false);
+    setError("");
+    void Promise.all([
+      supabase.auth.mfa.listFactors(),
+      supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+    ])
+      .then(([factors, aal]) => {
+        if (!active) return;
+        if (factors.error || aal.error) {
+          setError("Authenticator settings could not be loaded.");
+          return;
+        }
+        setFactor(
+          factors.data.totp.find((factor) => factor.status === "verified")
+            ?.id ?? "",
+        );
+        onAssuranceChange?.(
+          aal.data.currentLevel === "aal2" || aal.data.nextLevel === "aal1",
+        );
+        setStatus(
+          aal.data.currentLevel === "aal2"
+            ? "Verified for this session"
+            : factors.data.totp.length
+              ? "Enter your authenticator code to verify this session"
+              : "No authenticator enrolled",
+        );
+      })
+      .catch(() => {
+        if (active)
+          setError(
+            "Authenticator settings could not be loaded. Retry the security check.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [session?.access_token, onAssuranceChange, version]);
+  const enroll = async () => {
+    if (!supabase) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: "totp",
+        friendlyName: `Nomilora authenticator ${Date.now()}`,
+      });
+      if (error) throw error;
+      setFactor(data.id);
+      setQr(data.totp.qr_code);
+      setStatus(
+        "Scan the QR code in your authenticator, then verify its six-digit code.",
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Enrollment failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  const verify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!supabase || !factorId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({
+        factorId,
+        code,
+      });
+      if (error) throw error;
+      setCode("");
+      setQr("");
+      setStatus("Verified for this session");
+      onAssuranceChange?.(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Verification failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="mt-8 rounded-2xl border border-[#d8d3c6] p-6">
+      <h2 className="serif text-3xl">
+        {recovery ? "Verify your authenticator" : "Two-step account security"}
+      </h2>
+      <p className="mt-3 text-sm">
+        {recovery ? (
+          "If your account has two-step security enabled, enter a current code from your existing authenticator before changing your password. Keep your code private."
+        ) : (
+          <>
+            Staff workflows require a verified authenticator session. Supabase
+            manages enrollment and verification; no custom authentication
+            secrets are stored in Nomilora.
+          </>
+        )}
+      </p>
+      <p role="status" className="mt-3 text-sm">
+        {status}
+      </p>
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-[#a34d2c]">
+          {error}
+        </p>
+      )}
+      {error && (
+        <button
+          type="button"
+          className="mt-3 underline"
+          onClick={() => setVersion((v) => v + 1)}
+        >
+          Retry security check
+        </button>
+      )}
+      {qr && (
+        <img
+          alt="Authenticator enrollment QR code"
+          className="mt-4 h-48 w-48"
+          src={
+            qr.startsWith("data:image/")
+              ? qr
+              : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(qr)}`
+          }
+        />
+      )}
+      {!factorId && !recovery && (
+        <button
+          disabled={busy}
+          className={`${buttonClass} mt-4`}
+          onClick={() => void enroll()}
+        >
+          Enroll authenticator
+        </button>
+      )}
+      {factorId && status !== "Verified for this session" && (
+        <form onSubmit={verify} className="mt-4 max-w-sm space-y-3">
+          <label className="block text-sm font-semibold">
+            Authenticator code
+            <input
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className={inputClass}
+            />
+          </label>
+          <button disabled={busy} className={buttonClass}>
+            Verify session
+          </button>
+        </form>
+      )}
+    </section>
   );
 }

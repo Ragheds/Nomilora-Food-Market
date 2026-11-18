@@ -1,10 +1,16 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
-import nomiloraRouter from "./nomilora";
+import { createNomiloraRouter } from "./nomilora";
+import { nomiloraMeals } from "../lib/nomilora-catalog";
 
-const router: IRouter = Router();
+export function createPublicRouter(
+  resolveMeals?: () => Promise<typeof nomiloraMeals>,
+) {
+  const router: IRouter = Router();
 
-router.use(healthRouter);
-router.use(nomiloraRouter);
+  router.use(healthRouter);
+  router.use(createNomiloraRouter(resolveMeals));
 
-export default router;
+  return router;
+}
+export default createPublicRouter();
