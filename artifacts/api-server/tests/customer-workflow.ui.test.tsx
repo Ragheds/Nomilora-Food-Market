@@ -20,7 +20,10 @@ import { createAccountStore } from "../src/lib/account-store";
 import { createOperationsStore } from "../src/lib/operations-store";
 import { createApp } from "../src/app";
 import App from "../../nomilora/src/App";
-const state = vi.hoisted(() => ({ subject: "ui-customer" }));
+const state = vi.hoisted(() => ({
+  subject: "ui-customer",
+  failedReads: [] as string[],
+}));
 vi.mock("../../nomilora/src/lib/auth", () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
   useAuth: () => ({
@@ -55,6 +58,8 @@ async function request(
   method: string,
   body?: unknown,
 ) {
+  if (method === "GET" && state.failedReads.includes(path))
+    throw new Error("The private preview is temporarily unavailable.");
   const r = await nativeFetch(base + path, {
     method,
     headers: {
@@ -245,5 +250,41 @@ test("founder scheduling validates date order and saves the visible browser form
     ),
   );
   await screen.findByText("Saved.");
+  cleanup();
+});
+
+test("catalog retry also recovers preparation windows and payment configuration", async () => {
+  cleanup();
+  state.subject = "ui-customer";
+  state.failedReads = [
+    "/api/market/catalog",
+    "/api/market/slots",
+    "/api/market/config",
+  ];
+  window.history.replaceState(null, "", "/market");
+  render(<App />);
+  await screen.findByRole("heading", {
+    name: "The test menu is temporarily unavailable",
+  });
+  expect(screen.queryByText("No test menu is configured")).toBeNull();
+  state.failedReads = [];
+  fireEvent.click(screen.getByRole("button", { name: "Reload test menu" }));
+  await screen.findByRole("heading", { name: "Illustrative test meals" });
+  const address = screen.getByLabelText("Saved address") as HTMLSelectElement;
+  fireEvent.change(address, { target: { value: address.options[1].value } });
+  await waitFor(() =>
+    expect(
+      (screen.getByLabelText("Test preparation window") as HTMLSelectElement)
+        .options.length,
+    ).toBeGreaterThan(1),
+  );
+  expect(
+    screen.queryByText("Test windows could not be loaded. Retry above."),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("option", {
+      name: "Stripe test payment — temporarily unavailable",
+    }),
+  ).toBeNull();
   cleanup();
 });

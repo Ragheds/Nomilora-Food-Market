@@ -315,6 +315,8 @@ export function TestMarket({ customer }: { customer: Customer }) {
   return (
     <Frame title="Test market">
       <Feedback state={catalog} />
+      <Feedback state={slots} />
+      <Feedback state={config} />
       <Feedback state={action} />
       {catalog.loading ? (
         <p>Loading the saved test catalog…</p>
@@ -331,7 +333,11 @@ export function TestMarket({ customer }: { customer: Customer }) {
           <button
             type="button"
             className={`${secondary} mt-4`}
-            onClick={catalog.retry}
+            onClick={() => {
+              catalog.retry();
+              slots.retry();
+              config.retry();
+            }}
           >
             Reload test menu
           </button>
@@ -452,10 +458,18 @@ export function TestMarket({ customer }: { customer: Customer }) {
                 ))}
               </select>
             </label>
-            {!available.length && (
+            {slots.loading ? (
+              <p className="text-xs">Loading test preparation windows…</p>
+            ) : slots.error ? (
               <p className="text-xs">
-                No eligible test windows. No real delivery is available.
+                Test windows could not be loaded. Retry above.
               </p>
+            ) : (
+              !available.length && (
+                <p className="text-xs">
+                  No eligible test windows. No real delivery is available.
+                </p>
+              )
             )}
             <label className="block text-sm font-semibold">
               Test promotion
@@ -485,9 +499,13 @@ export function TestMarket({ customer }: { customer: Customer }) {
                   disabled={!config.data?.stripeTestConfigured}
                 >
                   Stripe test payment
-                  {!config.data?.stripeTestConfigured
-                    ? " — not configured"
-                    : ""}
+                  {config.loading
+                    ? " — checking availability"
+                    : config.error
+                      ? " — temporarily unavailable"
+                      : !config.data?.stripeTestConfigured
+                        ? " — not configured"
+                        : ""}
                 </option>
               </select>
             </label>
@@ -507,6 +525,10 @@ export function TestMarket({ customer }: { customer: Customer }) {
                 !ack ||
                 !lines.length ||
                 !selectedSlot ||
+                slots.loading ||
+                !!slots.error ||
+                (mode === "stripe_test" &&
+                  !config.data?.stripeTestConfigured) ||
                 customer.pending > 0 ||
                 !!customer.error ||
                 action.busy
