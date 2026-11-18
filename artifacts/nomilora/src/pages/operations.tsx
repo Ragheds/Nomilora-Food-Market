@@ -318,6 +318,24 @@ export function TestMarket({ customer }: { customer: Customer }) {
       <Feedback state={action} />
       {catalog.loading ? (
         <p>Loading the saved test catalog…</p>
+      ) : catalog.error ? (
+        <div className={panel} role="status">
+          <h2 className="serif text-2xl">
+            The test menu is temporarily unavailable
+          </h2>
+          <p className="mt-3">
+            We could not load the saved catalog. Your saved cart is unchanged.
+            If this private preview has expired, reopen it from the Replit
+            workspace, then retry.
+          </p>
+          <button
+            type="button"
+            className={`${secondary} mt-4`}
+            onClick={catalog.retry}
+          >
+            Reload test menu
+          </button>
+        </div>
       ) : !catalog.data?.length ? (
         <div className={panel}>
           <h2 className="serif text-2xl">No test menu is configured</h2>
@@ -1824,6 +1842,7 @@ function Scheduling({
     [start, setStart] = useState(""),
     [end, setEnd] = useState(""),
     [cutoff, setCutoff] = useState(""),
+    [dateError, setDateError] = useState(""),
     [capacity, setCapacity] = useState(50);
   return (
     <div className="space-y-6">
@@ -1875,18 +1894,33 @@ function Scheduling({
             className={`${panel} space-y-4`}
             onSubmit={(e) => {
               e.preventDefault();
+              const values = new FormData(e.currentTarget);
+              const times = ["Cutoff", "Start", "End"].map((name) =>
+                new Date(String(values.get(name) ?? "")).getTime(),
+              );
+              if (
+                times.some((time) => !Number.isFinite(time)) ||
+                !(times[0] < times[1] && times[1] < times[2])
+              ) {
+                setDateError(
+                  "Choose valid dates: cutoff before start, and start before end.",
+                );
+                return;
+              }
+              setDateError("");
               void run("/slots", "POST", {
                 zoneId,
                 kitchenId,
-                startsAt: new Date(start).toISOString(),
-                endsAt: new Date(end).toISOString(),
-                cutoffAt: new Date(cutoff).toISOString(),
+                startsAt: new Date(times[1]).toISOString(),
+                endsAt: new Date(times[2]).toISOString(),
+                cutoffAt: new Date(times[0]).toISOString(),
                 capacity,
                 enabled: true,
               }).catch(() => {});
             }}
           >
             <h2 className="serif text-2xl">Test preparation window</h2>
+            {dateError && <p role="alert">{dateError}</p>}
             <label className="block text-sm">
               Kitchen
               <select
@@ -1933,6 +1967,7 @@ function Scheduling({
                 <input
                   required
                   type="datetime-local"
+                  name={title}
                   value={value}
                   onChange={(e) => setter(e.target.value)}
                   className={input}
@@ -2000,22 +2035,35 @@ function Promotions({
     [percent, setPercent] = useState(10),
     [maxUses, setMax] = useState(100),
     [expiry, setExpiry] = useState("");
+  const [dateError, setDateError] = useState("");
   return (
     <div className="space-y-5">
       <form
         className={`${panel} space-y-4`}
         onSubmit={(e) => {
           e.preventDefault();
+          const expires = new Date(
+            String(new FormData(e.currentTarget).get("expiry") ?? ""),
+          );
+          if (
+            !Number.isFinite(expires.getTime()) ||
+            expires.getTime() <= Date.now()
+          ) {
+            setDateError("Choose a valid future expiry date.");
+            return;
+          }
+          setDateError("");
           void run("/promotions", "PUT", {
             code,
             percent,
             maxUses,
-            expiresAt: new Date(expiry).toISOString(),
+            expiresAt: expires.toISOString(),
             enabled: true,
           }).catch(() => {});
         }}
       >
         <h2 className="serif text-2xl">Test promotion</h2>
+        {dateError && <p role="alert">{dateError}</p>}
         <label className="block text-sm">
           Code
           <input
@@ -2055,6 +2103,7 @@ function Promotions({
           <input
             required
             type="datetime-local"
+            name="expiry"
             value={expiry}
             onChange={(e) => setExpiry(e.target.value)}
             className={input}
@@ -2680,17 +2729,16 @@ function BillingAttention({
   busy: boolean;
   admin: boolean;
 }) {
-  const data =
-    useData<
-      {
-        id: string;
-        subscriptionId: string;
-        amountCents: number;
-        periodStart: string;
-        periodEnd: string;
-        note: string;
-      }[]
-    >("/billing-attention");
+  const data = useData<
+    {
+      id: string;
+      subscriptionId: string;
+      amountCents: number;
+      periodStart: string;
+      periodEnd: string;
+      note: string;
+    }[]
+  >("/billing-attention");
   return (
     <section className="space-y-4">
       <h2 className="serif text-3xl">Paid test billing exceptions</h2>

@@ -71,13 +71,11 @@ async function request(
 }
 beforeAll(async () => {
   window.scrollTo = vi.fn();
-  window.matchMedia = vi
-    .fn()
-    .mockReturnValue({
-      matches: false,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    });
+  window.matchMedia = vi.fn().mockReturnValue({
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  });
   await migrate(db, {
     migrationsFolder: resolve(process.cwd(), "../../lib/db/migrations"),
   });
@@ -206,4 +204,46 @@ test("customer creates a persistent test order, gets a support reply, and never 
     screen.queryByText("This internal investigation is private."),
   ).toBeNull();
   expect(screen.getByText("Please check this test order.")).toBeTruthy();
+});
+
+test("founder scheduling validates date order and saves the visible browser form dates", async () => {
+  cleanup();
+  const admin = await accounts.identify({
+    subject: "ui-founder",
+    email: "ui-founder@example.test",
+  });
+  await db
+    .insert(tables.userRoles)
+    .values({ userId: admin.id, role: "founder_admin" });
+  state.subject = "ui-founder";
+  window.history.replaceState(null, "", "/workspace");
+  render(<App />);
+  fireEvent.click(await screen.findByRole("button", { name: "scheduling" }));
+  const cutoff = screen.getByLabelText("Cutoff") as HTMLInputElement;
+  const start = screen.getByLabelText("Start") as HTMLInputElement;
+  const end = screen.getByLabelText("End") as HTMLInputElement;
+  const form = end.closest("form")!;
+  const before = (await db.select().from(tables.deliverySlots)).length;
+  fireEvent.submit(form);
+  await screen.findByText(
+    "Choose valid dates: cutoff before start, and start before end.",
+  );
+  expect((await db.select().from(tables.deliverySlots)).length).toBe(before);
+  // Native date pickers/autofill can update the visible value before React state.
+  const value = (days: number) =>
+    new Date(Date.now() + days * 86400000).toISOString().slice(0, 16);
+  cutoff.value = value(4);
+  start.value = value(3);
+  end.value = value(5);
+  fireEvent.submit(form);
+  expect((await db.select().from(tables.deliverySlots)).length).toBe(before);
+  cutoff.value = value(2);
+  fireEvent.submit(form);
+  await waitFor(async () =>
+    expect((await db.select().from(tables.deliverySlots)).length).toBe(
+      before + 1,
+    ),
+  );
+  await screen.findByText("Saved.");
+  cleanup();
 });
