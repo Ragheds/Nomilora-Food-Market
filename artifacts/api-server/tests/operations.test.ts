@@ -1266,6 +1266,42 @@ test("verified weekly invoices wait for a box, fulfill exactly once, and preserv
     }),
     order.id,
   );
+  assert.equal(
+    await operations.recordSubscriptionInvoice({
+      ...invoice,
+      id: "in_test_duplicate_period",
+      eventId: "evt_test_duplicate_period",
+    }),
+    null,
+  );
+  const afterDuplicate = await operations.subscriptionBoxes(actors.b);
+  assert.equal(
+    afterDuplicate.boxes.find((box) => box.subscriptionId === plan.id)?.status,
+    "fulfilled",
+  );
+  assert.equal(
+    afterDuplicate.invoices.find((row) => row.id === "in_test_duplicate_period")
+      ?.status,
+    "needs_attention",
+  );
+  const future = new Date(periodEnd.getTime() + 7 * 86400000);
+  await db
+    .update(t.subscriptions)
+    .set({ status: "past_due", nextBillingAt: future })
+    .where(eq(t.subscriptions.id, plan.id));
+  assert.equal(
+    await operations.recordSubscriptionInvoice({
+      ...invoice,
+      eventId: "evt_test_late_old_invoice",
+    }),
+    order.id,
+  );
+  const [stillDue] = await db
+    .select()
+    .from(t.subscriptions)
+    .where(eq(t.subscriptions.id, plan.id));
+  assert.equal(stillDue.status, "past_due");
+  assert.equal(stillDue.nextBillingAt!.getTime(), future.getTime());
   const [afterMeal] = await db
     .select()
     .from(t.catalogMeals)

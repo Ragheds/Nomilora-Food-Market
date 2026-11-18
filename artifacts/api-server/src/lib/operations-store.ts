@@ -1,5 +1,16 @@
 import { createHash, randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray, ne, lt, gt, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  ne,
+  lt,
+  gt,
+  sql,
+} from "drizzle-orm";
 import type { db as Database } from "@workspace/db";
 import * as t from "@workspace/db/schema";
 import type { Role } from "@workspace/api-zod/account";
@@ -1865,7 +1876,7 @@ export function createOperationsStore(db: typeof Database) {
           )
           .for("update");
         demand(
-          !existing || existing.status !== "fulfilled",
+          !existing || (!existing.orderId && existing.status !== "fulfilled"),
           409,
           "This weekly test box already created an order and cannot be edited.",
         );
@@ -1979,7 +1990,12 @@ export function createOperationsStore(db: typeof Database) {
                 plan.nextBillingAt && plan.nextBillingAt > input.periodEnd
                   ? plan.nextBillingAt
                   : input.periodEnd,
-              status: plan.status === "paused" ? "paused" : "active",
+              status:
+                existingInvoice ||
+                plan.status === "paused" ||
+                (plan.nextBillingAt && input.periodEnd < plan.nextBillingAt)
+                  ? plan.status
+                  : "active",
             })
             .where(eq(t.subscriptions.id, plan.id));
       });
@@ -2018,6 +2034,11 @@ export function createOperationsStore(db: typeof Database) {
             box,
             409,
             "Choose a weekly test box for this paid test billing period.",
+          );
+          demand(
+            !box.orderId,
+            409,
+            "This weekly test box was already fulfilled by a different paid invoice. Review billing before retrying.",
           );
           demand(
             box.items.reduce((n, item) => n + item.quantity, 0) ===
@@ -2112,6 +2133,7 @@ export function createOperationsStore(db: typeof Database) {
               and(
                 eq(t.subscriptionBoxes.subscriptionId, invoice.subscriptionId),
                 eq(t.subscriptionBoxes.periodStart, invoice.periodStart),
+                isNull(t.subscriptionBoxes.orderId),
               ),
             );
           await audit(
