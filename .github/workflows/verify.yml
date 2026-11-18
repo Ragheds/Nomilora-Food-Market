@@ -36,3 +36,16 @@ jobs:
         env:
           LOG_LEVEL: silent
           TEST_DATABASE_URL: postgresql://nomilora_test:disposable_ci_only@127.0.0.1:5432/nomilora_test
+      - name: Verify portable container
+        run: |
+          docker build --tag nomilora:test .
+          docker run --detach --name nomilora-test --read-only --tmpfs /tmp --publish 18082:8080 nomilora:test
+          trap 'docker logs nomilora-test; docker rm --force nomilora-test' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18082/api/healthz; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:18082/api/healthz
+          curl --fail --silent http://127.0.0.1:18082/account | grep -qi '<!doctype html>'
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18082/api/not-a-route)" = 404
+          test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:18082/.env)" = 404

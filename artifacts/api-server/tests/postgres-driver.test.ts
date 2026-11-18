@@ -14,7 +14,7 @@ import { createOperationsStore } from "../src/lib/operations-store";
 
 // Opt-in only: refuses hosted databases and existing application schemas.
 test(
-  "PostgreSQL driver serializes competing checkouts without overselling",
+  "PostgreSQL driver serializes checkouts and restores their full backup into a fresh database",
   { skip: !process.env.TEST_DATABASE_URL, timeout: 60000 },
   async () => {
     const url = new URL(process.env.TEST_DATABASE_URL!);
@@ -176,6 +176,91 @@ test(
       assert.equal(meal.stock, 0);
       assert.equal(slot.reserved, 1);
       assert.equal((await db.select().from(t.orders)).length, 1);
+      // Exercise recovery with real rows and the migration journal, never the live database.
+      const recoveryDir = await mkdtemp(
+        path.join(tmpdir(), "nomilora-restore-"),
+      );
+      const recoveryName = "nomilora_restore_test";
+      const pgEnv = {
+        ...process.env,
+        PGHOST: url.hostname,
+        PGPORT: url.port || "5432",
+        PGUSER: decodeURIComponent(url.username),
+        PGPASSWORD: decodeURIComponent(url.password),
+        PGDATABASE: "nomilora_test",
+      };
+      let created = false;
+      const command = (
+        binary: string,
+        args: string[],
+        database = "nomilora_test",
+      ) =>
+        spawnSync(binary, args, {
+          env: { ...pgEnv, PGDATABASE: database },
+          encoding: "utf8",
+          timeout: 10000,
+        });
+      try {
+        const dumpPath = path.join(recoveryDir, "after-checkout.dump");
+        const dump = command("pg_dump", [
+          "--format=custom",
+          "--no-owner",
+          "--no-acl",
+          "--file",
+          dumpPath,
+        ]);
+        assert.equal(dump.status, 0, dump.stderr);
+        await chmod(dumpPath, 0o600);
+        // No --clean or --if-exists: an existing destination is a hard failure.
+        const create = command("createdb", [
+          "--maintenance-db=nomilora_test",
+          recoveryName,
+        ]);
+        assert.equal(create.status, 0, create.stderr);
+        created = true;
+        const restore = command(
+          "pg_restore",
+          [
+            "--exit-on-error",
+            "--no-owner",
+            "--no-acl",
+            "--dbname",
+            recoveryName,
+            dumpPath,
+          ],
+          recoveryName,
+        );
+        assert.equal(restore.status, 0, restore.stderr);
+        const restored = command(
+          "psql",
+          [
+            "--no-psqlrc",
+            "--tuples-only",
+            "--no-align",
+            "--set=ON_ERROR_STOP=1",
+            "--command",
+            `select json_build_object('orders', (select count(*) from orders), 'items', (select count(*) from order_items), 'reserved', (select reserved from delivery_slots where id='${fixture.slotId}'), 'stock', (select stock from catalog_meals where id='lemon-chicken-rice'), 'migrations', (select count(*) from drizzle.__drizzle_migrations))`,
+          ],
+          recoveryName,
+        );
+        assert.equal(restored.status, 0, restored.stderr);
+        assert.deepEqual(JSON.parse(restored.stdout), {
+          orders: 1,
+          items: 1,
+          reserved: 1,
+          stock: 0,
+          migrations: 6,
+        });
+      } finally {
+        if (created) {
+          const drop = command("dropdb", [
+            "--maintenance-db=nomilora_test",
+            recoveryName,
+          ]);
+          assert.equal(drop.status, 0, drop.stderr);
+        }
+        await rm(recoveryDir, { recursive: true, force: true });
+      }
     } finally {
       await pool.end();
     }

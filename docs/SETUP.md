@@ -51,3 +51,27 @@ The Replit Run command builds and starts both existing artifact services: API on
 The pinned official Stripe CLI is a development dependency. To receive signed test events without making the Replit preview public, put the approved sandbox `STRIPE_TEST_SECRET_KEY` in Replit Secrets, set `PAYMENT_RETURN_ORIGIN` to the exact private-preview origin already present in `APP_ORIGINS`, and set `NOMILORA_STRIPE_TEST_FORWARD=yes`. Start the app using its Run command. The launcher connects directly to Stripe, filters the eight required events from the sandbox account itself, and forwards only to loopback `/api/payments/webhook`. It passes the signing secret directly to the API process in memory; no credential is printed, embedded in frontend code or committed. Live keys are rejected before starting the CLI.
 
 If the forwarding process cannot connect or stops, the supervisor stops both app services rather than presenting a working payment intake with no listener. Replit sleeps when inactive; this forwarding setup is for development acceptance, not production webhook hosting. For a real launch, prepare an explicitly approved durable endpoint and operations plan. Do not disable private-preview access to make webhook delivery work.
+
+## Portable single-origin container
+
+`Dockerfile` builds the original frontend and bundled API, then copies only their built files into an unprivileged Node 24 runtime. The final image contains no source checkout, package manager, development Stripe CLI, `.env`, database backup or dependency tree from the builder. `.dockerignore` excludes private configuration from the build context. It retains the test-only gates; this is not a live-commerce switch or a deployment action.
+
+Build with public Supabase values only:
+
+```sh
+docker build --tag nomilora:test \
+  --build-arg VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
+  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLIC_PUBLISHABLE_KEY .
+```
+
+Provide runtime configuration using the host's private secret manager. `DATABASE_URL`, server-side Supabase URL, exact `APP_ORIGINS`, and any approved Stripe **test** secret/webhook/return configuration remain server-only. Do not pass server secrets as build arguments. Start the image on the host's assigned `PORT` (default 8080); `/api/healthz` checks HTTP availability, not provider or database readiness. The container does not run migrations, seed data, grant founder permissions or start a development webhook tunnel. Complete those explicitly from a reviewed administrative environment before directing traffic to the service.
+
+For local smoke testing with a private runtime environment file:
+
+```sh
+docker run --rm --read-only --tmpfs /tmp --env-file .env --publish 8080:8080 nomilora:test
+```
+
+Never send the existing Replit internal `helium` database URL to another host and assume it can connect. Verify network reachability and TLS privately first. Preserve Replit PostgreSQL unless a documented hosting/network limitation requires an approved migration with a tested backup/restore plan. The private Replit development URL sleeps and requires editor access; it is not a public production origin.
+
+The intended domain is `nomilora.com`, which the founder does not yet own. A November 18 registry lookup returned no existing record; availability and purchase terms still require registrar confirmation. No domain or hosting was purchased. Do not set public auth callbacks to an unowned domain. Once ownership and a host are approved, prepare exact HTTPS auth callbacks, sender DNS, webhook endpoint and CORS/return origins before a release review.
